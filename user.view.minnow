@@ -1,0 +1,17 @@
+
+userGeneral() 199
+
+singleUserByEmail(email string) 200
+	user one(subset(*user,{eq(~.email,email)})) 1
+
+sessionEmail(token string) 201
+	email one(subset(*session,{eq(~.token,token)})).user.email 1
+
+singleUser(user user) 202
+	user user 1
+
+singleSessionByToken(token string) 204
+	session one(subset(*session,{eq(~.token,token)})) 1
+
+getHash(user user) 203
+	hash user.hash 1
