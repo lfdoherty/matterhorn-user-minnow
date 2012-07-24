@@ -12,8 +12,8 @@ function setSessionCookie(res, session){
 }
 
 exports.load = function(app, secureApp){
-	_.assertObject(app)
-	_.assertObject(secureApp)
+	//_.assertObject(app)
+	//_.assertObject(secureApp)
 	
 	function authenticate(req, res, next){
 		console.log('authenticating');

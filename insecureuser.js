@@ -23,27 +23,22 @@ function setLongSessionCookie(res, session){
 exports.load = function(app){
 
 	function authenticate(req, res, next){
-		log('authenticating');
+		//console.log('authenticating: ' + JSON.stringify(req.cookies));
 
-		if(req.cookies.sid === undefined){
+		if(req.cookies.SID === undefined){
 			doLoginRedirect();
 			return;
 		}
 
-		var pi = req.cookies.sid.indexOf('|')
+		var pi = req.cookies.SID.indexOf('|')
 		if(pi === -1){
 			doLoginRedirect();
 			return;
 		}
-		var sid = req.cookies.sid.substr(0, pi);
+		var sid = req.cookies.SID.substr(0, pi);
 
 		function doLoginRedirect(){
-			//sys.debug(sys.inspect(req));
-			//var url = secureApp.settings.securehost + '/login?next=' + req.url;
 			log('redirecting to ' + '/login?next='+req.url);
-			//res.redirect(url);
-			//res.send('need to use js redirect');
-			//res.app.javascriptRedirectToInsecure(res, '/login?next=' + req.url);
 			res.redirect('/login?next=' + req.url);
 		}
 
@@ -121,10 +116,7 @@ exports.load = function(app){
 						getUser().makeSession(userId, function(token){
 							res.send(JSON.stringify({token: token, userId: userId}));
 						});
-		
-						//setSessionCookie(res, session);
-						//setLongSessionCookie(res, session)
-				
+
 					}else{
 						res.send({
 							error: 'authentication failed'
@@ -139,7 +131,7 @@ exports.load = function(app){
 
 	app.post(exports, '/ajax/logout', function(req, res){
 
-		var sid = req.cookies.sid;
+		var sid = req.cookies.SID;
 
 		if(sid !== undefined){
 			getUser().clearSession(sid);
@@ -151,6 +143,7 @@ exports.load = function(app){
 	
 	app.post(exports, '/ajax/checksession', function(req, res){
 
+		//console.log(require('util').inspect(req))
 		var token = req.body.token
 
 		getUser().checkSession(token, function(ok, userId){
