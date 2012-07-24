@@ -18,13 +18,23 @@ var getUser = internalmaker.getUser;
 
 var _ = require('underscorem');
 
-exports.make = function(minnowClient){
-
-	internalmaker.make(minnowClient)
-}
-
 exports.secure = require('./ssluser');
 exports.insecure = require('./insecureuser');
+
+exports.make = function(app, secureApp, minnowClient){
+	_.assertLength(arguments, 3)
+	
+	internalmaker.make(minnowClient)
+	
+	var insecureAuthenticate = exports.insecure.load(app)
+	var secureAuthenticate = exports.secure.load(app, secureApp)
+	
+	return {
+		insecureAuthenticate: insecureAuthenticate.authenticate,
+		secureAuthenticate: secureAuthenticate.authenticate
+	}
+}
+
 
 exports.getEmail = function(userId, cb){
 	getUser().getEmail(userId, cb);
@@ -37,6 +47,7 @@ exports.hasSession = function(req, cb){
 	if(sid === undefined){
 		cb(false);
 	}else{
+		sid = sid.substr(0, sid.indexOf('|'))
 		getUser().checkSession(sid, function(ok, userId){
 			cb(ok);
 		});

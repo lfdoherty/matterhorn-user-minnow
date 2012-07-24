@@ -1,7 +1,9 @@
 
-exports.dir = __dirname;
+var _ = require('underscorem')
+
+//exports.dir = __dirname;
 exports.name = 'matterhorn-ssl-user';
-exports.requirements = ['matterhorn-standard'];
+//exports.requirements = ['matterhorn-standard'];
 
 var getUser = require('./internalmaker').getUser;
 
@@ -9,126 +11,135 @@ function setSessionCookie(res, session){
 	res.cookie('SID', session, {httpOnly: true, secure: true});
 }
 
-exports.authenticate = function(req, res, next){
-	console.log('authenticating');
-	var sid = req.cookies.sid;
+exports.load = function(app, secureApp){
+	_.assertObject(app)
+	_.assertObject(secureApp)
+	
+	function authenticate(req, res, next){
+		console.log('authenticating');
+		var sid = req.cookies.sid;
 
-	function doLoginRedirect(){
-		sys.debug(sys.inspect(req));
-		//var url = secureApp.settings.securehost + '/login?next=' + req.url;
-		console.log('redirecting to ' + '/login?next='+req.url);
-		//res.redirect(url);
-		//res.send('need to use js redirect');
-		res.app.javascriptRedirectToSecure(res, '/login?next=' + req.url);
-	}
+		function doLoginRedirect(){
+			sys.debug(sys.inspect(req));
+			//var url = secureApp.settings.securehost + '/login?next=' + req.url;
+			console.log('redirecting to ' + '/login?next='+req.url);
+			//res.redirect(url);
+			//res.send('need to use js redirect');
+			res.app.javascriptRedirectToSecure(res, '/login?next=' + req.url);
+		}
 
-	if(sid === undefined){
-		doLoginRedirect();
-		return;
-	}
-
-	getUser().checkSession(sid, function(ok, userId){
-		if(ok){
-			getUser().getEmail(userId, function(email){
-				req.user = {id: userId, email: email};
-				next();
-			});
-		}else{
-			sys.debug('redirecting to login');
+		if(sid === undefined){
 			doLoginRedirect();
+			return;
 		}
-	});
-}
 
-//set up services for signup, login, logout, and lost password reset.
-//all to be accessed via AJAX (these are not HTML resources.)
+		getUser().checkSession(sid, function(ok, userId){
+			if(ok){
+				getUser().getEmail(userId, function(email){
+					req.user = {id: userId, email: email};
+					next();
+				});
+			}else{
+				sys.debug('redirecting to login');
+				doLoginRedirect();
+			}
+		});
+	}
 
-function signup(req, res){
+	//set up services for signup, login, logout, and lost password reset.
+	//all to be accessed via AJAX (these are not HTML resources.)
 
-	var data = req.body;
+	function signup(req, res){
 
-	getUser().createUser(function(userId){
-		getUser().setEmail(userId, data.email);
-		getUser().setPassword(userId, data.password);
+		var data = req.body;
 
-		var session = getUser().makeSession(userId);
+		getUser().createUser(function(userId){
+			getUser().setEmail(userId, data.email);
+			getUser().setPassword(userId, data.password);
 
-		setSessionCookie(res, session);
+			var session = getUser().makeSession(userId);
 
-		res.send(session);
-	});
-}
+			setSessionCookie(res, session);
 
-app.post(exports, '/ajax/signup', signup);
+			res.send(session);
+		});
+	}
 
-function login(req, res){
+	app.post(exports, '/ajax/signup', signup);
 
-	var data = req.body;
+	function login(req, res){
 
-	console.log('/ajax/login request received : ' + data.email);
+		var data = req.body;
 
-	getUser().findUser(data.email, function(userId){
-		console.log('found user: ' + userId);
-		if(userId === undefined){
-			res.send({
-				error: 'authentication failed'
-			}, 403);
-		}else{
-			sys.debug('found user: ' + userId);
-			getUser().authenticate(userId, data.password, function(ok){
+		console.log('/ajax/login request received : ' + data.email);
 
-				if(ok){
-					var session = getUser().makeSession(userId);
+		getUser().findUser(data.email, function(userId){
+			console.log('found user: ' + userId);
+			if(userId === undefined){
+				res.send({
+					error: 'authentication failed'
+				}, 403);
+			}else{
+				sys.debug('found user: ' + userId);
+				getUser().authenticate(userId, data.password, function(ok){
+
+					if(ok){
+						var session = getUser().makeSession(userId);
 		
-					setSessionCookie(res, session);
-					res.send(session);
+						setSessionCookie(res, session);
+						res.send(session);
 				
-				}else{
-					res.send({
-						error: 'authentication failed'
-					}, 403);
-				}
-			});
+					}else{
+						res.send({
+							error: 'authentication failed'
+						}, 403);
+					}
+				});
+			}
+		});
+	}
+
+	app.post(exports, '/ajax/login', login);
+
+	app.post(exports, '/ajax/logout', function(req, res){
+
+		var sid = req.cookies.sid;
+
+		if(sid !== undefined){
+			getUser().clearSession(sid);
+			res.clearCookie('SID');
 		}
+
+		res.send({result: 'ok'});	
 	});
+
+	//secureApp.js(exports, 'auth-utils', ['utils']);
+
+	var loginPage = {
+		url: '/login',
+		css: [],
+		js: 'simple_login',
+		cb: function(req, res, cb){
+			console.log('cbing');
+			cb({after: req.query.next, port: app.port, securePort: app.securePort});
+		}
+	};	
+	var signupPage = {
+		url: '/signup',
+		css: [],
+		js: 'simple_signup',
+		cb: function(req, res, cb){
+			cb({port: res.app.getPort(), securePort: res.app.getSecurePort()})
+		}
+	};	
+
+	secureApp.post(exports, '/ajax/signup', signup);
+	secureApp.post(exports, '/ajax/login', login);
+
+	secureApp.page(exports, loginPage);
+	secureApp.page(exports, signupPage);
+	
+	return {
+		authenticate: authenticate
+	}
 }
-
-app.post(exports, '/ajax/login', login);
-
-app.post(exports, '/ajax/logout', function(req, res){
-
-	var sid = req.cookies.sid;
-
-	if(sid !== undefined){
-		getUser().clearSession(sid);
-		res.clearCookie('SID');
-	}
-
-	res.send({result: 'ok'});	
-});
-
-//secureApp.js(exports, 'auth-utils', ['utils']);
-
-var loginPage = {
-	url: '/login',
-	css: [],
-	js: 'simple_login',
-	cb: function(req, res, cb){
-		console.log('cbing');
-		cb({after: req.query.next, port: app.port, securePort: app.securePort});
-	}
-};	
-var signupPage = {
-	url: '/signup',
-	css: [],
-	js: 'simple_signup',
-	cb: function(req, res, cb){
-		cb({port: res.app.getPort(), securePort: res.app.getSecurePort()})
-	}
-};	
-
-secureApp.post(exports, '/ajax/signup', signup);
-secureApp.post(exports, '/ajax/login', login);
-
-secureApp.page(exports, loginPage);
-secureApp.page(exports, signupPage);

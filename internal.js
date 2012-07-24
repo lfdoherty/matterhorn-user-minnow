@@ -158,21 +158,13 @@ function finishMake(c, m, cb){
 		},
 		checkSession: function(token, cb){
 			_.assertString(token);
-			/*s.getString(session, 'sessions', function(userId){
-				if(userId === undefined){
-					cb(false);
-				}else{
-					cb(true, userId);
-				}
-			});*/
-			console.log('checking token: ' + token)
+
 			c.view('singleSessionByToken', [token], function(suv){
 				if(suv.has('session')){
 					cb(true, suv.session.user.id())
 				}else{
 					cb(false)
 				}
-				//cb(suv.user.id())
 			})			
 		},
 		/*clearSession: function(session){

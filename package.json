@@ -1,6 +1,6 @@
 {
 	"name": "matterhorn-user-minnow",
-	"version": "0.2.1",
+	"version": "0.2.3",
 	"description": "User management for the matterhorn framework, with minnow as the database.",
 	"author": "Liam Doherty",
 	"main": "user",
@@ -8,6 +8,7 @@
 		"underscorem": ">=0.1",
 		"matterhorn-standard": ">=0.1",
 		"bcrypt": ">=0.1.2",
-		"mailer": ">=0.1"
+		"mailer": ">=0.1",
+		"quicklog": "*"
 	}
 }
