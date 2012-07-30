@@ -11,6 +11,8 @@ function hashPassword(password, salt){
 	return hash;
 }
 
+var log = require('quicklog').make('user-minnow/internal')
+
 function make(minnowClient, cb){
 
 	_.assertLength(arguments, 2);
@@ -130,7 +132,7 @@ function finishMake(c, m, cb){
 		findUser: function(email, cb){
 			//s.getInt(email, 'lookup-by-email', cb);
 			c.view('singleUserByEmail', [email], function(suv){
-				console.log('json: ' + JSON.stringify(suv.toJson()))
+				//console.log('json: ' + JSON.stringify(suv.toJson()))
 				if(suv.hasProperty('user')){
 					_.assert(suv.user.id() > 0)
 					cb(suv.user.id())
@@ -158,19 +160,31 @@ function finishMake(c, m, cb){
 		},
 		checkSession: function(token, cb){
 			_.assertString(token);
-
+			log('checking for session with token: ' + token)
 			c.view('singleSessionByToken', [token], function(suv){
 				if(suv.has('session')){
+					log('found session with token: ' + token)
 					cb(true, suv.session.user.id())
 				}else{
+					log('no session with token: ' + token)
 					cb(false)
 				}
 			})			
 		},
-		/*clearSession: function(session){
-			s.del(session, 'sessions');
-			console.log('clearing user session');
-		}*/
+		clearSession: function(token, cb){
+			//s.del(session, 'sessions');
+			//console.log('clearing user session');
+			c.view('singleSessionByToken', [token], function(sv){
+				if(sv.has('session')){
+					sv.session.del()
+					log('session deleted: ' + token)
+					if(cb) cb(true)
+				}else{
+					log('session clear failed, unknown token: ' + token)
+					if(cb) cb(false)
+				}
+			})
+		}
 	};
 	
 	cb(handle);

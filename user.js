@@ -21,6 +21,8 @@ var _ = require('underscorem');
 exports.secure = require('./ssluser');
 exports.insecure = require('./insecureuser');
 
+var log = require('quicklog').make('user-minnow/api')
+
 exports.make = function(app, secureApp, minnowClient){
 	_.assertLength(arguments, 3)
 	
@@ -43,8 +45,9 @@ exports.findUser = function(email, cb){
 	getUser().findUser(email, cb);
 }
 exports.hasSession = function(req, cb){
-	var sid = req.cookies.sid;
+	var sid = req.cookies.SID;
 	if(sid === undefined){
+		log('no SID cookie found')
 		cb(false);
 	}else{
 		sid = sid.substr(0, sid.indexOf('|'))

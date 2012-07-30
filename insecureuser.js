@@ -8,7 +8,7 @@ exports.module = module
 //exports.name = 'matterhorn-insecure-user';
 //exports.requirements = ['matterhorn-standard'];
 
-var log = require('quicklog').make('user-insecure')
+var log = require('quicklog').make('user-minnow/insecure')
 
 var getUser = require('./internalmaker').getUser;
 
@@ -114,7 +114,7 @@ exports.load = function(app){
 
 					if(ok){
 						getUser().makeSession(userId, function(token){
-							res.send(JSON.stringify({token: token, userId: userId}));
+							res.send({token: token, userId: userId});
 						});
 
 					}else{
@@ -134,11 +134,17 @@ exports.load = function(app){
 		var sid = req.cookies.SID;
 
 		if(sid !== undefined){
-			getUser().clearSession(sid);
+			sid = sid.substr(0, sid.indexOf('|'));
 			res.clearCookie('SID');
+			getUser().clearSession(sid, function(did){
+				if(did){
+					res.send({result: 'ok'});
+				}else{
+					res.send({result: 'unknown session token'});
+				}
+			});
 		}
 
-		res.send({result: 'ok'});	
 	});
 	
 	app.post(exports, '/ajax/checksession', function(req, res){
