@@ -32,6 +32,14 @@ function finishMake(c, m, cb){
 			}, cb)
 		},
 		
+		makeUser: function(email, password, cb){
+			handle.createUser(function(userId){
+				handle.setEmail(userId, email);
+				handle.setPassword(userId, password);
+				cb(userId)
+			})
+		},
+		
 		//note that 'authentication key' here refers to keys used for lost password retrieval, not sessions
 		//hence we only want 1 to exist at a time, and we need to be able to delete it once it has been used
 		createAuthenticationKey: function(email, cb){
