@@ -45,6 +45,7 @@ exports.load = function(app){
 
 		getUser().checkSession(sid, function(ok, userId){
 			if(ok){
+				_.assertInt(userId)
 				getUser().getEmail(userId, function(email){
 					req.user = {id: userId, email: email};
 					next();
@@ -63,8 +64,12 @@ exports.load = function(app){
 
 		var data = req.body;
 
+		log('/ajax/signup request received .email: ' + data.email);
+		
 		getUser().findUser(data.email, function(userId){
 
+			log('/ajax/signup found user?: ' + userId);
+			
 			if(userId !== undefined){
 				getUser().authenticate(userId, data.password, function(ok){
 					if(ok){
@@ -89,7 +94,7 @@ exports.load = function(app){
 
 						res.send({token: token, userId: userId});
 					});
-				});
+				}, true);
 			}
 		})
 	}

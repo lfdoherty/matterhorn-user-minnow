@@ -37,6 +37,14 @@ exports.make = function(app, secureApp, minnowClient, cb){
 	}
 }
 
+exports.on = function(eventName, cb){
+	var u = getUser()
+	if(eventName === 'userMade'){
+		u.onUserMade(cb)
+	}else{
+		_.errout('unsupported event: ' + eventName)
+	}
+}
 
 exports.getEmail = function(userId, cb){
 	getUser().getEmail(userId, cb);

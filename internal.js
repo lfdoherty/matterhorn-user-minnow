@@ -25,19 +25,33 @@ function make(minnowClient, cb){
 
 function finishMake(c, m, cb){
 
+	var userMadeListeners = []
+	
 	var handle = {
-		createUser: function(cb){
+		createUser: function(cb, viaWeb){
+			//console.log('making user')
 			m.make('user', {
 				createdTime: Date.now()
-			}, cb)
+			}, function(userId){
+				//console.log('make got userId: ' + userId)
+				_.assert(userId > 0)
+				userMadeListeners.forEach(function(listener){
+					listener(userId, viaWeb)
+				})
+				cb(userId)
+			})
 		},
 		
-		makeUser: function(email, password, cb){
+		makeUser: function(email, password, cb, viaWeb){
 			handle.createUser(function(userId){
 				handle.setEmail(userId, email);
 				handle.setPassword(userId, password);
 				cb(userId)
-			})
+			}, viaWeb)
+		},
+		
+		onUserMade: function(cb){
+			userMadeListeners.push(cb)
 		},
 		
 		//note that 'authentication key' here refers to keys used for lost password retrieval, not sessions
@@ -71,16 +85,14 @@ function finishMake(c, m, cb){
 		},
 		setEmail: function(id, email){
 			_.assertString(email)
-			/*s.setInt(email, 'lookup-by-email', id);
 
-			i.setString(id, 'email', email);
-			i.setNumber(id, 'email-changed-time', Date.now());*/
 			c.view('singleUser', [id], function(suv){
 				suv.user.email.set(email)
 			})
 		},
 		getEmail: function(id, cb){
 			//i.getString(id, 'email', cb);
+			_.assert(id > 0)
 			c.view('singleUser', [id], function(suv){
 				cb(suv.user.email.value())
 			})
@@ -88,47 +100,22 @@ function finishMake(c, m, cb){
 		setPassword: function(id, password){
 
 			var salt = bcrypt.genSaltSync(10);  
-			/*
-			i.setString(id, 'salt', 'BCRYPT');
-			i.setString(id, 'password-hash', hashPassword(password, salt));
-			i.setNumber(id, 'password-changed-time', Date.now());*/
+
 			c.view('singleUser', [id], function(suv){
-				//suv.salt.set('BCRYPT')
 				suv.user.hash.set(hashPassword(password, salt))
 				suv.user.passwordChangedTime.set(Date.now())
 				console.log('finished set password')
-				//process.exit(0)
 			})			
 		},
 		authenticate: function(id, password, cb, failDelayCb){
-			/*_.assertInt(id);
-			console.log('in authenticate');
-			i.getString(id, ['password-hash', 'salt'], function(hash, salt){
 
-				console.log(arguments);
-
-				var passed;
-				if(salt === 'BCRYPT'){
-					passed = bcrypt.compareSync(password, hash);
-				}else{
-					//TODO - also make sure to auto-upgrade here
-					throw 'TODO - support legacy password hashes: ' + salt;
-				}
-				console.log('passed: ' + passed);
-				if(passed){
-					cb(true);
-				}else{
-					cb(false);
-					//TODO set up fail delay
-				}
-			});*/
 			_.assert(id > 0)
 			c.view('getHash', [id], function(v){
 				var hash = v.hash.value()
 				var passed = bcrypt.compareSync(password, hash);
-				console.log('hash: ' + hash)
-				console.log('password: ' + password)
-				console.log('passed: ' + passed)
+				//console.log('hash: ' + hash)
+				//console.log('password: ' + password)
+				//console.log('passed: ' + passed)
 				if(passed){
 					cb(true);
 				}else{
@@ -138,7 +125,7 @@ function finishMake(c, m, cb){
 			})
 		},
 		findUser: function(email, cb){
-			//s.getInt(email, 'lookup-by-email', cb);
+
 			c.view('singleUserByEmail', [email], function(suv){
 				//console.log('json: ' + JSON.stringify(suv.toJson()))
 				if(suv.hasProperty('user')){
@@ -151,17 +138,16 @@ function finishMake(c, m, cb){
 		},
 		
 		makeSession: function(id, cb){
-			/*var session = random.make();
-			s.setInt(session, 'sessions', id);
-			return session;*/
 			
 			var token = random.uid()
 
 			c.view('singleUser', [id], function(suv){
-				m.make('session', {
+				_.assert(suv.user.id() > 0)
+				var obj = m.make('session', {
 					user: suv.user,
 					token: token
-				}, function(){
+				}, function(newId){
+					//console.log('made session: ' + newId + ' ' + JSON.stringify(obj.toJson()))
 					if(cb) cb(token)
 				})
 			})
@@ -171,6 +157,8 @@ function finishMake(c, m, cb){
 			log('checking for session with token: ' + token)
 			c.view('singleSessionByToken', [token], function(suv){
 				if(suv.has('session')){
+					//console.log('user id: ' + suv.session.user.id() + ' ' + JSON.stringify(suv.toJson()))
+					_.assert(suv.session.user.id() > 0)
 					log('found session with token: ' + token)
 					cb(true, suv.session.user.id())
 				}else{
@@ -180,8 +168,8 @@ function finishMake(c, m, cb){
 			})			
 		},
 		clearSession: function(token, cb){
-			//s.del(session, 'sessions');
-			//console.log('clearing user session');
+
+			//console.log('clearing user session: ' + token);
 			c.view('singleSessionByToken', [token], function(sv){
 				if(sv.has('session')){
 					sv.session.del()
