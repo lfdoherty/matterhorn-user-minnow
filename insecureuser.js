@@ -22,6 +22,25 @@ function setLongSessionCookie(res, session){
 
 exports.load = function(app){
 
+	function authenticateByToken(token, cb){
+		_.assertString(token)
+		_.assertFunction(cb)
+		
+		getUser().checkSession(token, function(ok, userId){
+			if(ok){
+				_.assertInt(userId)
+				//getUser().getEmail(userId, function(email){
+				//	req.user = {id: userId, email: email};
+				//	req.userToken = userId
+					cb(undefined, userId)
+				//});
+			}else{
+				//util.debug('redirecting to login');
+				//doLoginRedirect();
+				cb('authentication failed')
+			}
+		});
+	}
 	function authenticate(req, res, next){
 		//console.log('authenticating: ' + JSON.stringify(req.cookies));
 
@@ -48,6 +67,7 @@ exports.load = function(app){
 				_.assertInt(userId)
 				getUser().getEmail(userId, function(email){
 					req.user = {id: userId, email: email};
+					req.userToken = userId
 					next();
 				});
 			}else{
@@ -305,6 +325,7 @@ exports.load = function(app){
 	app.page(exports, resetPasswordPage);
 	
 	return {
-		authenticate: authenticate
+		authenticate: authenticate,
+		authenticateByToken: authenticateByToken
 	}
 }
