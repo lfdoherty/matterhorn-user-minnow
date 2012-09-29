@@ -86,14 +86,16 @@ function finishMake(c, m, cb){
 		setEmail: function(id, email){
 			_.assertString(email)
 
-			c.view('singleUser', [id], function(suv){
+			c.view('singleUser', [id], function(err, suv){
+				if(err) throw err
 				suv.user.email.set(email)
 			})
 		},
 		getEmail: function(id, cb){
 			//i.getString(id, 'email', cb);
 			_.assert(id > 0)
-			c.view('singleUser', [id], function(suv){
+			c.view('singleUser', [id], function(err, suv){
+				if(err) throw err
 				cb(suv.user.email.value())
 			})
 		},
@@ -101,7 +103,8 @@ function finishMake(c, m, cb){
 
 			var salt = bcrypt.genSaltSync(10);  
 
-			c.view('singleUser', [id], function(suv){
+			c.view('singleUser', [id], function(err, suv){
+				if(err) throw err
 				suv.user.hash.set(hashPassword(password, salt))
 				suv.user.passwordChangedTime.set(Date.now())
 				console.log('finished set password')
@@ -110,7 +113,8 @@ function finishMake(c, m, cb){
 		authenticate: function(id, password, cb, failDelayCb){
 
 			_.assert(id > 0)
-			c.view('getHash', [id], function(v){
+			c.view('getHash', [id], function(err, v){
+				if(err) throw err
 				var hash = v.hash.value()
 				var passed = bcrypt.compareSync(password, hash);
 				//console.log('hash: ' + hash)
@@ -126,7 +130,8 @@ function finishMake(c, m, cb){
 		},
 		findUser: function(email, cb){
 
-			c.view('singleUserByEmail', [email], function(suv){
+			c.view('singleUserByEmail', [email], function(err, suv){
+				if(err) throw err
 				//console.log('json: ' + JSON.stringify(suv.toJson()))
 				if(suv.hasProperty('user')){
 					_.assert(suv.user.id() > 0)
@@ -141,7 +146,8 @@ function finishMake(c, m, cb){
 			
 			var token = random.uid()
 
-			c.view('singleUser', [id], function(suv){
+			c.view('singleUser', [id], function(err, suv){
+				if(err) throw err
 				_.assert(suv.user.id() > 0)
 				var obj = m.make('session', {
 					user: suv.user,
@@ -155,7 +161,8 @@ function finishMake(c, m, cb){
 		checkSession: function(token, cb){
 			_.assertString(token);
 			log('checking for session with token: ' + token)
-			c.view('singleSessionByToken', [token], function(suv){
+			c.view('singleSessionByToken', [token], function(err, suv){
+				if(err) throw err
 				if(suv.has('session')){
 					//console.log('user id: ' + suv.session.user.id() + ' ' + JSON.stringify(suv.toJson()))
 					_.assert(suv.session.user.id() > 0)
@@ -170,7 +177,8 @@ function finishMake(c, m, cb){
 		clearSession: function(token, cb){
 
 			//console.log('clearing user session: ' + token);
-			c.view('singleSessionByToken', [token], function(sv){
+			c.view('singleSessionByToken', [token], function(err, sv){
+				if(err) throw err
 				if(sv.has('session')){
 					sv.session.del()
 					log('session deleted: ' + token)
