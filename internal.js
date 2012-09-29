@@ -25,6 +25,8 @@ function make(minnowClient, cb){
 
 function finishMake(c, m, cb){
 
+	_.assertDefined(m)
+	
 	var userMadeListeners = []
 	
 	var handle = {
