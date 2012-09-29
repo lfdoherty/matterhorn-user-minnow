@@ -18,7 +18,8 @@ function make(minnowClient, cb){
 	_.assertLength(arguments, 2);
 	_.assertFunction(cb);
 
-	minnowClient.view('userGeneral', [], _.assureOnce(function(h){
+	minnowClient.view('userGeneral', [], _.assureOnce(function(err, h){
+		if(err) throw err;
 		finishMake(minnowClient, h, cb)
 	}))		
 }
