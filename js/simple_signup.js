@@ -1,5 +1,7 @@
 require('matterhorn-standard/js/jquery')
-require('./signup')
+//require('./signup')
+var pollsave = require('matterhorn-standard/js/pollsave')//.pollsave
+var u = require('./utils')
 
 var script = '<div>'+
 	'<noscript><h1><font color="red">You must enable Javascript to use this website.<br/><br/><br/></font></h1></noscript>'+
@@ -13,4 +15,36 @@ var script = '<div>'+
 	'<div id="result"/>'+
 	'</div>';
 
-jQuery('body').html(script);
+
+jQuery(document).ready(function(){
+	document.body.innerHTML = script
+
+	jQuery("#submit").click(function(){
+		
+		var email = jQuery("#email").val();
+		var password = jQuery("#password").val();
+
+		var json = {email: email, password: password};
+
+		function ok(res){
+			
+			console.log('got ok')
+			
+			//res = JSON.parse(res)
+			
+			u.makeCookie(res.token, res.userId);
+			
+			var next = u.getParameterByName('next');
+			if(!next){
+				next = '/';
+			}
+			document.location = 'http://' + document.location.hostname + ':' + port + next;
+		}
+
+		function fail(err){
+			alert('registration failure: ' + err.error);
+		}
+
+		pollsave(json, '/ajax/signup', 200, ok, fail);
+	});
+});
