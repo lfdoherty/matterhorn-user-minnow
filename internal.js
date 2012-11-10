@@ -166,7 +166,7 @@ function finishMake(c, m, cb){
 			log('checking for session with token: ' + token)
 			c.view('singleSessionByToken', [token], function(err, suv){
 				if(err) throw err
-				if(suv.has('session')){
+				if(suv.has('session') && suv.session.has('user')){
 					//console.log('user id: ' + suv.session.user.id() + ' ' + JSON.stringify(suv.toJson()))
 					_.assert(suv.session.user.id() > 0)
 					log('found session with token: ' + token)

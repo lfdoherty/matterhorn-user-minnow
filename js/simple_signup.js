@@ -1,4 +1,4 @@
-require('matterhorn-standard/js/jquery')
+//require('matterhorn-standard/js/jquery')
 //require('./signup')
 var pollsave = require('matterhorn-standard/js/pollsave')//.pollsave
 var u = require('./utils')
@@ -16,13 +16,15 @@ var script = '<div>'+
 	'</div>';
 
 
-jQuery(document).ready(function(){
+//jQuery(document).ready(function(){
+document.addEventListener('DOMContentLoaded', function(){
 	document.body.innerHTML = script
 
-	jQuery("#submit").click(function(){
+	//jQuery("#submit").click(function(){
+	document.getElementById('submit').addEventListener('click', function(){
 		
-		var email = jQuery("#email").val();
-		var password = jQuery("#password").val();
+		var email = document.getElementById('email').value//jQuery("#email").val();
+		var password = document.getElementById('password').value//jQuery("#password").val();
 
 		var json = {email: email, password: password};
 
@@ -42,8 +44,10 @@ jQuery(document).ready(function(){
 		}
 
 		function fail(err){
+			//console.log('fail: ' + err)
 			alert('registration failure: ' + err.error);
 		}
+		console.log('signing up')
 
 		pollsave(json, '/ajax/signup', 200, ok, fail);
 	});

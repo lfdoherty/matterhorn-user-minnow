@@ -83,6 +83,13 @@ exports.load = function(app){
 	function signup(req, res){
 
 		var data = req.body;
+		
+		if(!_.isString(data.email) || !_.isString(data.password)){
+			res.send({
+				error: 'missing email or password'
+			}, 400)
+			return
+		}
 
 		log('/ajax/signup request received .email: ' + data.email);
 		
@@ -326,6 +333,9 @@ exports.load = function(app){
 	
 	return {
 		authenticate: authenticate,
-		authenticateByToken: authenticateByToken
+		authenticateByToken: authenticateByToken,
+		onUserMade: function(listener){
+			getUser().onUserMade(listener)
+		}
 	}
 }
