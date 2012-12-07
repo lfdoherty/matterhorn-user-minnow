@@ -31,26 +31,27 @@ function finishMake(c, m, cb){
 	var userMadeListeners = []
 	
 	var handle = {
-		createUser: function(cb, viaWeb){
-			//console.log('making user')
+	
+		makeUser: function(email, password, cb, viaWeb){
+
+			var salt = bcrypt.genSaltSync(10);
+			var hash = hashPassword(password, salt)
+			var now = Date.now()
+			
 			m.make('user', {
-				createdTime: Date.now()
+				createdTime: now,
+				email: email,
+				passwordChangedTime: now,
+				hash: hash
+				//password: password
 			}, function(userId){
 				//console.log('make got userId: ' + userId)
 				_.assert(userId > 0)
 				userMadeListeners.forEach(function(listener){
-					listener(userId, viaWeb)
+					listener(userId, email, viaWeb)
 				})
 				cb(userId)
 			})
-		},
-		
-		makeUser: function(email, password, cb, viaWeb){
-			handle.createUser(function(userId){
-				handle.setEmail(userId, email);
-				handle.setPassword(userId, password);
-				cb(userId)
-			}, viaWeb)
 		},
 		
 		onUserMade: function(cb){

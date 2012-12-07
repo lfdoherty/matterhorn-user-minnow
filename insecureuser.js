@@ -108,9 +108,7 @@ exports.load = function(app){
 					}
 				})
 			}else{
-				getUser().createUser(function(userId){
-					getUser().setEmail(userId, data.email);
-					getUser().setPassword(userId, data.password);
+				getUser().makeUser(data.email, data.password, function(userId){
 				
 					log('created user ' + userId + ' ' + data.email);
 

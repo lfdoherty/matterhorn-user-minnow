@@ -53,16 +53,16 @@ exports.load = function(app, secureApp){
 
 		var data = req.body;
 
-		getUser().createUser(function(userId){
-			getUser().setEmail(userId, data.email);
-			getUser().setPassword(userId, data.password);
+		getUser().makeUser(data.email, data.password, function(userId){
+			//getUser().setEmail(userId, data.email);
+			//getUser().setPassword(userId, data.password);
 
 			var session = getUser().makeSession(userId);
 
 			setSessionCookie(res, session);
 
 			res.send(session);
-		});
+		}, true);
 	}
 
 	app.post(exports, '/ajax/signup', signup);
