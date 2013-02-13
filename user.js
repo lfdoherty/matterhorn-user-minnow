@@ -23,13 +23,13 @@ exports.insecure = require('./insecureuser');
 
 var log = require('quicklog').make('user-minnow/api')
 
-exports.make = function(app, secureApp, minnowClient, cb){
-	_.assertLength(arguments, 4)
+exports.make = function(app, secureApp, minnowClient, host, secureHost, cb){
+	_.assertLength(arguments, 6)
 	
 	internalmaker.make(minnowClient, cb)
 	
-	var insecureAuthenticate = exports.insecure.load(app)
-	var secureAuthenticate = exports.secure.load(app, secureApp)
+	var insecureAuthenticate = exports.insecure.load(app, secureHost)
+	var secureAuthenticate = exports.secure.load(app, secureApp, host, secureHost)
 	
 	return {
 		insecureAuthenticate: insecureAuthenticate.authenticate,

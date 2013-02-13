@@ -41,7 +41,7 @@ jQuery(document).ready(function(){
 			
 			jQuery("#result").append("Login Successful");
 			
-			window.location = 'http://' + window.location.host + after;
+			window.location = after;
 		}
 
 		function fail(){

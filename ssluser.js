@@ -15,7 +15,7 @@ function setSessionCookie(res, session){
 	res.cookie('SID', session, {httpOnly: true, secure: true});
 }
 
-exports.load = function(app, secureApp){
+exports.load = function(app, secureApp, host, secureHost){
 	//_.assertObject(app)
 	//_.assertObject(secureApp)
 	
@@ -85,8 +85,8 @@ exports.load = function(app, secureApp){
 		var sid = req.cookies.SID.substr(0, pi);
 
 		function doLoginRedirect(){
-			log('redirecting to ' + '/login?next='+req.url);
-			res.redirect('/login?next=' + req.url);
+			console.log('redirecting to ' + secureHost+'/login?next='+host+req.url);
+			res.redirect(secureHost+'/login?next=' + host + req.url);
 		}
 
 
@@ -235,7 +235,7 @@ exports.load = function(app, secureApp){
 
 	app.post('/ajax/login', login);
 
-	app.post('/ajax/logout', function(req, res){
+	/*app.post('/ajax/logout', function(req, res){
 
 		var sid = req.cookies.sid;
 
@@ -245,7 +245,26 @@ exports.load = function(app, secureApp){
 		}
 
 		res.send({result: 'ok'});	
-	});
+	});*/
+	app.post('/ajax/logout', logout);
+	secureApp.post('/ajax/logout', logout);
+	function logout(req, res){
+
+		var sid = req.cookies.SID;
+
+		if(sid !== undefined){
+			sid = sid.substr(0, sid.indexOf('|'));
+			res.clearCookie('SID');
+			getUser().clearSession(sid, function(did){
+				if(did){
+					res.send({result: 'ok'});
+				}else{
+					res.send({result: 'unknown session token'});
+				}
+			});
+		}
+
+	}
 
 	//secureApp.js(exports, 'auth-utils', ['utils']);
 

@@ -20,7 +20,7 @@ function setLongSessionCookie(res, session){
 	res.cookie('SID', session, {httpOnly: true, secure: true, expires: new Date(Date.now()+OneMonth)});
 }
 
-exports.load = function(app){
+exports.load = function(app, secureHost){
 
 	function authenticateByToken(token, cb){
 		_.assertString(token)
@@ -58,7 +58,12 @@ exports.load = function(app){
 
 		function doLoginRedirect(){
 			log('redirecting to ' + '/login?next='+req.url);
-			res.redirect('/login?next=' + req.url);
+			console.log(secureHost + ' redirecting to ' + '/login?next='+req.url);
+			if(secureHost){
+				res.redirect(secureHost+'/login?next=' + req.url);
+			}else{
+				res.redirect('/login?next=' + req.url);
+			}
 		}
 
 
@@ -331,8 +336,10 @@ exports.load = function(app){
 	app.post('/ajax/signup', signup);
 	app.post('/ajax/login', login);
 
-	app.page(exports, loginPage);
-	app.page(exports, signupPage);
+	if(!secureHost){
+		app.page(exports, loginPage);
+		app.page(exports, signupPage);
+	}
 	app.page(exports, lostPasswordPage);
 	app.page(exports, resetPasswordPage);
 	
