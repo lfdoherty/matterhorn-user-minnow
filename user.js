@@ -35,7 +35,10 @@ exports.make = function(app, secureApp, minnowClient, cb){
 		insecureAuthenticate: insecureAuthenticate.authenticate,
 		secureAuthenticate: secureAuthenticate.authenticate,
 		authenticateByToken: insecureAuthenticate.authenticateByToken,
-		onUserMade: insecureAuthenticate.onUserMade
+		onUserMade: insecureAuthenticate.onUserMade,
+		getEmail: function(userId, cb){
+			exports.getEmail(userId, cb)
+		}
 	}
 }
 

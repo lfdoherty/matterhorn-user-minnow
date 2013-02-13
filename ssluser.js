@@ -1,11 +1,15 @@
 
 var _ = require('underscorem')
 
+exports.module = module
 //exports.dir = __dirname;
-exports.name = 'matterhorn-ssl-user';
+//exports.name = 'matterhorn-ssl-user';
 //exports.requirements = ['matterhorn-standard'];
 
 var getUser = require('./internalmaker').getUser;
+
+var log = require('quicklog').make('user-minnow/secure')
+var sys = require('util')
 
 function setSessionCookie(res, session){
 	res.cookie('SID', session, {httpOnly: true, secure: true});
@@ -15,12 +19,12 @@ exports.load = function(app, secureApp){
 	//_.assertObject(app)
 	//_.assertObject(secureApp)
 	
-	function authenticate(req, res, next){
-		console.log('authenticating');
+	/*function authenticate(req, res, next){
+		console.log('authenticating securely');
 		var sid = req.cookies.sid;
 
 		function doLoginRedirect(){
-			sys.debug(sys.inspect(req));
+			//sys.debug(sys.inspect(req));
 			//var url = secureApp.settings.securehost + '/login?next=' + req.url;
 			console.log('redirecting to ' + '/login?next='+req.url);
 			//res.redirect(url);
@@ -44,12 +48,68 @@ exports.load = function(app, secureApp){
 				doLoginRedirect();
 			}
 		});
+	}*/
+	function authenticateByToken(token, cb){
+		_.assertString(token)
+		_.assertFunction(cb)
+		console.log('authenticating by token')
+		
+		getUser().checkSession(token, function(ok, userId){
+			if(ok){
+				_.assertInt(userId)
+				//getUser().getEmail(userId, function(email){
+				//	req.user = {id: userId, email: email};
+				//	req.userToken = userId
+					cb(undefined, userId)
+				//});
+			}else{
+				//util.debug('redirecting to login');
+				//doLoginRedirect();
+				cb('authentication failed')
+			}
+		});
 	}
+	function authenticate(req, res, next){
+		//console.log('authenticating: ' + JSON.stringify(req.cookies));
+
+		if(req.cookies.SID === undefined){
+			doLoginRedirect();
+			return;
+		}
+
+		var pi = req.cookies.SID.indexOf('|')
+		if(pi === -1){
+			doLoginRedirect();
+			return;
+		}
+		var sid = req.cookies.SID.substr(0, pi);
+
+		function doLoginRedirect(){
+			log('redirecting to ' + '/login?next='+req.url);
+			res.redirect('/login?next=' + req.url);
+		}
+
+
+		getUser().checkSession(sid, function(ok, userId){
+			if(ok){
+				_.assertInt(userId)
+				getUser().getEmail(userId, function(email){
+					req.user = {id: userId, email: email};
+					req.userToken = userId
+					next();
+				});
+			}else{
+				util.debug('redirecting to login');
+				doLoginRedirect();
+			}
+		});
+	}
+
 
 	//set up services for signup, login, logout, and lost password reset.
 	//all to be accessed via AJAX (these are not HTML resources.)
 
-	function signup(req, res){
+	/*function signup(req, res){
 
 		var data = req.body;
 
@@ -65,9 +125,53 @@ exports.load = function(app, secureApp){
 		}, true);
 	}
 
-	app.post(exports, '/ajax/signup', signup);
+	app.post('/ajax/signup', signup);*/
+	function signup(req, res){
 
-	function login(req, res){
+		var data = req.body;
+		
+		if(!_.isString(data.email) || !_.isString(data.password)){
+			res.send({
+				error: 'missing email or password'
+			}, 400)
+			return
+		}
+
+		log('/ajax/signup request received .email: ' + data.email);
+		
+		getUser().findUser(data.email, function(userId){
+
+			log('/ajax/signup found user?: ' + userId);
+			
+			if(userId !== undefined){
+				getUser().authenticate(userId, data.password, function(ok){
+					if(ok){
+						login(req,res);
+					}else{
+						res.send({
+							error: 'user already exists and authentication failed'
+						}, 403);
+					}
+				})
+			}else{
+				getUser().makeUser(data.email, data.password, function(userId){
+				
+					log('created user ' + userId + ' ' + data.email);
+
+					var session = getUser().makeSession(userId, function(token){
+						_.assertString(token)
+						//setSessionCookie(res, session);
+						//setLongSessionCookie(res, session)
+
+						res.send({token: token, userId: userId});
+					});
+				}, true);
+			}
+		})
+	}
+
+	app.post('/ajax/signup', signup);
+	/*function login(req, res){
 
 		var data = req.body;
 
@@ -97,11 +201,41 @@ exports.load = function(app, secureApp){
 				});
 			}
 		});
+	}*/
+	function login(req, res){
+
+		var data = req.body;
+
+		log('/ajax/login request received .email: ' + data.email);
+
+		getUser().findUser(data.email, function(userId){
+			log('found user: ' + userId);
+			if(userId === undefined){
+				res.send({
+					error: 'authentication failed'
+				}, 403);
+			}else{
+				util.debug('found user: ' + userId);
+				getUser().authenticate(userId, data.password, function(ok){
+
+					if(ok){
+						getUser().makeSession(userId, function(token){
+							res.send({token: token, userId: userId});
+						});
+
+					}else{
+						res.send({
+							error: 'authentication failed'
+						}, 403);
+					}
+				});
+			}
+		});
 	}
 
-	app.post(exports, '/ajax/login', login);
+	app.post('/ajax/login', login);
 
-	app.post(exports, '/ajax/logout', function(req, res){
+	app.post('/ajax/logout', function(req, res){
 
 		var sid = req.cookies.sid;
 
@@ -117,29 +251,37 @@ exports.load = function(app, secureApp){
 
 	var loginPage = {
 		url: '/login',
-		css: [],
-		js: 'simple_login',
+		//css: [],
+		js: './simple_login',
 		cb: function(req, res, cb){
 			console.log('cbing');
-			cb({after: req.query.next, port: app.port, securePort: app.securePort});
+			cb({after: req.query.next, port: app.port, securePort: app.securePort,
+				title: app.loginTitle || 'Log In'
+			});
 		}
 	};	
 	var signupPage = {
 		url: '/signup',
-		css: [],
-		js: 'simple_signup',
+		//css: [],
+		js: './simple_signup',
 		cb: function(req, res, cb){
-			cb({port: res.app.getPort(), securePort: res.app.getSecurePort()})
+			cb({port: res.app.getPort(), securePort: res.app.getSecurePort(),
+				title: app.signupTitle || 'Sign Up'
+			})
 		}
 	};	
 
-	secureApp.post(exports, '/ajax/signup', signup);
-	secureApp.post(exports, '/ajax/login', login);
+	secureApp.post('/ajax/signup', signup);
+	secureApp.post('/ajax/login', login);
 
 	secureApp.page(exports, loginPage);
 	secureApp.page(exports, signupPage);
 	
 	return {
-		authenticate: authenticate
+		authenticate: authenticate,
+		authenticateByToken: authenticateByToken,
+		onUserMade: function(listener){
+			getUser().onUserMade(listener)
+		}
 	}
 }

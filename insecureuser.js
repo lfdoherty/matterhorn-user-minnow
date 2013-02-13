@@ -124,7 +124,7 @@ exports.load = function(app){
 		})
 	}
 
-	app.post(exports, '/ajax/signup', signup);
+	app.post('/ajax/signup', signup);
 
 	function login(req, res){
 
@@ -157,9 +157,9 @@ exports.load = function(app){
 		});
 	}
 
-	app.post(exports, '/ajax/login', login);
+	app.post('/ajax/login', login);
 
-	app.post(exports, '/ajax/logout', function(req, res){
+	app.post('/ajax/logout', function(req, res){
 
 		var sid = req.cookies.SID;
 
@@ -177,7 +177,7 @@ exports.load = function(app){
 
 	});
 	
-	app.post(exports, '/ajax/checksession', function(req, res){
+	app.post('/ajax/checksession', function(req, res){
 
 		//console.log(require('util').inspect(req))
 		var token = req.body.token
@@ -193,7 +193,7 @@ exports.load = function(app){
 
 	var email = require('mailer');
 
-	app.post(exports, '/ajax/resetpassword', function(req, res){
+	app.post('/ajax/resetpassword', function(req, res){
 		var data = req.body;
 		getUser().getAuthenticationKeyEmail(data.key, function(email){
 			if(email){
@@ -221,7 +221,7 @@ exports.load = function(app){
 		});
 	})
 
-	app.post(exports, '/ajax/sendresetpasswordemail', function(req, res){
+	app.post('/ajax/sendresetpasswordemail', function(req, res){
 		var data = req.body;
 		getUser().findUser(data.email, function(userId){
 			if(userId === undefined){
@@ -296,6 +296,13 @@ exports.load = function(app){
 				})
 		}
 	};	
+	
+	var forceCookiePage = {
+		url: '/forcecookie',
+		js: './forcecookie'
+	};	
+	app.page(exports, forceCookiePage)
+	
 	var lostPasswordPage = {
 		url: '/lostpassword',
 		//css: [],
@@ -321,8 +328,8 @@ exports.load = function(app){
 		}
 	};	
 
-	app.post(exports, '/ajax/signup', signup);
-	app.post(exports, '/ajax/login', login);
+	app.post('/ajax/signup', signup);
+	app.post('/ajax/login', login);
 
 	app.page(exports, loginPage);
 	app.page(exports, signupPage);
