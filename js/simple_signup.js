@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function(){
 			if(!next){
 				next = '/';
 			}
-			document.location = 'http://' + document.location.hostname + ':' + port + next;
+			document.location = /*'http://' + document.location.hostname + ':' + port + */next;
 		}
 
 		function fail(err){
