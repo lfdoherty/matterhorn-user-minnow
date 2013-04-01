@@ -184,7 +184,11 @@ function finishMake(c, m, cb){
 			c.view('singleSessionByToken', [token], function(err, sv){
 				if(err) throw err
 				if(sv.has('session')){
-					sv.session.del()
+					//try{
+						sv.session.del()
+					/*}catch(e){
+						console.log(e)
+					}*/
 					log('session deleted: ' + token)
 					if(cb) cb(true)
 				}else{
