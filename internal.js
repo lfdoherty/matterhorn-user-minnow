@@ -98,7 +98,7 @@ function finishMake(c, m, cb){
 		getEmail: function(id, cb){
 			//i.getString(id, 'email', cb);
 			_.assert(id > 0)
-			c.view('singleUser', [id], function(err, suv){
+			c.snap('singleUser', [id], function(err, suv){
 				if(err) throw err
 				cb(suv.user.email.value())
 			})
@@ -117,7 +117,7 @@ function finishMake(c, m, cb){
 		authenticate: function(id, password, cb, failDelayCb){
 
 			_.assert(id > 0)
-			c.view('getHash', [id], function(err, v){
+			c.snap('getHash', [id], function(err, v){
 				if(err) throw err
 				var hash = v.hash.value()
 				var passed = bcrypt.compareSync(password, hash);
@@ -134,7 +134,7 @@ function finishMake(c, m, cb){
 		},
 		findUser: function(email, cb){
 
-			c.view('singleUserByEmail', [email], function(err, suv){
+			c.snap('singleUserByEmail', [email], function(err, suv){
 				if(err) throw err
 				//console.log('json: ' + JSON.stringify(suv.toJson()))
 				if(suv.hasProperty('user')){
@@ -150,7 +150,7 @@ function finishMake(c, m, cb){
 			
 			var token = random.uid()
 
-			c.view('singleUser', [id], function(err, suv){
+			c.snap('singleUser', [id], function(err, suv){
 				if(err) throw err
 				_.assert(suv.user.id() > 0)
 				var obj = m.make('session', {
@@ -165,15 +165,20 @@ function finishMake(c, m, cb){
 		checkSession: function(token, cb){
 			_.assertString(token);
 			log('checking for session with token: ' + token)
-			c.view('singleSessionByToken', [token], function(err, suv){
+			c.snap('singleSessionByToken', [token], function(err, suv){
 				if(err) throw err
-				if(suv.has('session') && suv.session.has('user')){
-					//console.log('user id: ' + suv.session.user.id() + ' ' + JSON.stringify(suv.toJson()))
-					_.assert(suv.session.user.id() > 0)
-					log('found session with token: ' + token)
-					cb(true, suv.session.user.id())
-				}else{
-					log('no session with token: ' + token)
+				try{
+					if(suv.has('session') && suv.session.has('user')){
+						//console.log('user id: ' + suv.session.user.id() + ' ' + JSON.stringify(suv.toJson()))
+						_.assert(suv.session.user.id() > 0)
+						log('found session with token: ' + token)
+						cb(true, suv.session.user.id())
+					}else{
+						log('no session with token: ' + token)
+						cb(false)
+					}
+				}catch(e){
+					handle.clearSession(token)
 					cb(false)
 				}
 			})			
@@ -184,11 +189,11 @@ function finishMake(c, m, cb){
 			c.view('singleSessionByToken', [token], function(err, sv){
 				if(err) throw err
 				if(sv.has('session')){
-					//try{
+					try{
 						sv.session.del()
-					/*}catch(e){
+					}catch(e){
 						console.log(e)
-					}*/
+					}
 					log('session deleted: ' + token)
 					if(cb) cb(true)
 				}else{
