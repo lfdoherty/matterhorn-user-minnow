@@ -178,8 +178,9 @@ function finishMake(c, m, cb){
 						cb(false)
 					}
 				}catch(e){
-					handle.clearSession(token)
+					console.log(e)
 					cb(false)
+					handle.clearSession(token)
 				}
 			})			
 		},

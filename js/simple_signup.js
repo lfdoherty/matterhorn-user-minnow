@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 		function ok(res){
 			
-			console.log('got ok')
+			//console.log('got ok')
 			
 			//res = JSON.parse(res)
 			
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function(){
 			//console.log('fail: ' + err)
 			alert('registration failure: ' + err.error);
 		}
-		console.log('signing up')
+		//console.log('signing up')
 
 		pollsave(json, '/ajax/signup', 200, ok, fail);
 	});

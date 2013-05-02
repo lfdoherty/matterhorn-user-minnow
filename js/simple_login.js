@@ -1,4 +1,4 @@
-require('matterhorn-standard/js/jquery')
+//require('matterhorn-standard/js/jquery')
 //require('./login')
 
 var u = require('./utils')
@@ -20,13 +20,15 @@ var script = '<div>'+
 	'<div id="result"/>'+
 	'</div>';
 
-jQuery(document).ready(function(){
+//jQuery(document).ready(function(){
+document.addEventListener('DOMContentLoaded', function(){
 	document.body.innerHTML = script
 
-	jQuery("#submit").click(function(){
+	//jQuery("#submit").click(function(){
+	document.getElementById('submit').addEventListener('click', function(){
 		
-		var email = jQuery("#email").val();
-		var password = jQuery("#password").val();
+		var email = document.getElementById('email').value//jQuery("#email").val();
+		var password = document.getElementById('password').value//jQuery("#password").val();
 
 		var json = {email: email, password: password};
 
@@ -34,12 +36,14 @@ jQuery(document).ready(function(){
 
 			var loc = window.location;
 			
-			console.log('got res: ' + JSON.stringify(res))
+			//console.log('got res: ' + JSON.stringify(res))
 			//res = JSON.parse(res)
 
 			u.makeCookie(res.token, res.userId);
 			
-			jQuery("#result").append("Login Successful");
+			//jQuery("#result").append("Login Successful");
+			
+			document.getElementById('result').innerHTML += 'Login Successful'
 			
 			window.location = after;
 		}
@@ -54,7 +58,7 @@ jQuery(document).ready(function(){
 	var next = u.getParameterByName('next');
 
 	if(next){
-		var signup = jQuery('#signuplink');
-		signup.attr('href', signup.attr('href')+'?next='+next);
+		var signup = document.getElementById('signuplink')//jQuery('#signuplink');
+		signup.href +='?next='+next
 	}
 });
