@@ -103,7 +103,7 @@ function finishMake(c, m, cb){
 				cb(suv.user.email.value())
 			})
 		},
-		setPassword: function(id, password){
+		setPassword: function(id, password, cb){
 
 			var salt = bcrypt.genSaltSync(10);  
 
@@ -112,6 +112,7 @@ function finishMake(c, m, cb){
 				suv.user.hash.set(hashPassword(password, salt))
 				suv.user.passwordChangedTime.set(Date.now())
 				console.log('finished set password')
+				if(cb) cb()
 			})			
 		},
 		authenticate: function(id, password, cb, failDelayCb){

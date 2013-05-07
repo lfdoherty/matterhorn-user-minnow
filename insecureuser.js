@@ -171,6 +171,7 @@ exports.load = function(app, secureHost){
 		if(sid !== undefined){
 			sid = sid.substr(0, sid.indexOf('|'));
 			res.clearCookie('SID');
+			res.cookie('LOGGEDOUT','true')
 			getUser().clearSession(sid, function(did){
 				if(did){
 					res.send({result: 'ok'});

@@ -51,6 +51,10 @@ exports.on = function(eventName, cb){
 	}
 }
 
+exports.setPassword = function(userId, password, cb){
+	getUser().setPassword(userId, password, cb)
+}
+
 exports.getEmail = function(userId, cb){
 	getUser().getEmail(userId, cb);
 }

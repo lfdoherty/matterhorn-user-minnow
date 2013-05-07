@@ -21,6 +21,7 @@ function makeCookie(token, userId){
 	newCookie += '; Expires='+new Date(Date.now()+OneMonth).toUTCString();
 	newCookie = 'SID='+newCookie;
 	console.log('set cookie: ' + newCookie)
+	document.cookie = 'LOGGEDOUT=; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
 	document.cookie = newCookie
 }
 exports.makeCookie = makeCookie
