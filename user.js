@@ -61,6 +61,8 @@ exports.make = function(app, secureApp, minnowClient, host, secureHost, cb){
 		handle.makeUser = internal.makeUser
 		handle.authenticate = internal.authenticate
 		handle.makeSession = internal.makeSession
+		
+		handle.getEmail = internal.getEmail
 	
 		cb(handle)
 	})
