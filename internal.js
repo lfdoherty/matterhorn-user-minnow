@@ -45,7 +45,7 @@ function finishMake(c, m, cb){
 				hash: hash
 				//password: password
 			}, function(userId){
-				//console.log('make got userId: ' + userId)
+				//console.log('make got userId: ' + userId + ' ' + userMadeListeners.length)
 				_.assert(userId > 0)
 				userMadeListeners.forEach(function(listener){
 					listener(userId, email, viaWeb)
@@ -159,13 +159,13 @@ function finishMake(c, m, cb){
 					token: token
 				}, function(newId){
 					//console.log('made session: ' + newId + ' ' + JSON.stringify(obj.toJson()))
-					if(cb) cb(token)
+					if(cb) cb(token, newId)
 				})
 			})
 		},
 		checkSession: function(token, cb){
 			_.assertString(token);
-			log('checking for session with token: ' + token)
+			//console.log('checking for session with token: ' + token)
 			c.snap('singleSessionByToken', [token], function(err, suv){
 				if(err) throw err
 				try{

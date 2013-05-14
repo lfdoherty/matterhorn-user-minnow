@@ -10,7 +10,7 @@ exports.module = module
 
 var log = require('quicklog').make('user-minnow/insecure')
 
-var getUser = require('./internalmaker').getUser;
+//var getUser = require('./internalmaker').getUser;
 
 function setSessionCookie(res, session){
 	res.cookie('SID', session, {httpOnly: true, secure: true});
@@ -20,13 +20,14 @@ function setLongSessionCookie(res, session){
 	res.cookie('SID', session, {httpOnly: true, secure: true, expires: new Date(Date.now()+OneMonth)});
 }
 
-exports.load = function(app, secureHost){
+exports.load = function(app, secureHost, internal){
+	_.assertLength(arguments, 3)
 
 	function authenticateByToken(token, cb){
 		_.assertString(token)
 		_.assertFunction(cb)
 		
-		getUser().checkSession(token, function(ok, userId){
+		internal.checkSession(token, function(ok, userId){
 			if(ok){
 				_.assertInt(userId)
 				//getUser().getEmail(userId, function(email){
@@ -58,7 +59,7 @@ exports.load = function(app, secureHost){
 
 		function doLoginRedirect(){
 			log('redirecting to ' + '/login?next='+req.url);
-			console.log(secureHost + ' redirecting to ' + '/login?next='+req.url);
+			//console.log(secureHost + ' redirecting to ' + '/login?next='+req.url);
 			if(secureHost){
 				res.redirect(secureHost+'/login?next=' + req.url);
 			}else{
@@ -67,10 +68,10 @@ exports.load = function(app, secureHost){
 		}
 
 
-		getUser().checkSession(sid, function(ok, userId){
+		internal.checkSession(sid, function(ok, userId){
 			if(ok){
 				_.assertInt(userId)
-				getUser().getEmail(userId, function(email){
+				internal.getEmail(userId, function(email){
 					req.user = {id: userId, email: email};
 					req.userToken = userId
 					next();
@@ -98,12 +99,12 @@ exports.load = function(app, secureHost){
 
 		log('/ajax/signup request received .email: ' + data.email);
 		
-		getUser().findUser(data.email, function(userId){
+		internal.findUser(data.email, function(userId){
 
 			log('/ajax/signup found user?: ' + userId);
 			
 			if(userId !== undefined){
-				getUser().authenticate(userId, data.password, function(ok){
+				internal.authenticate(userId, data.password, function(ok){
 					if(ok){
 						login(req,res);
 					}else{
@@ -113,11 +114,11 @@ exports.load = function(app, secureHost){
 					}
 				})
 			}else{
-				getUser().makeUser(data.email, data.password, function(userId){
+				internal.makeUser(data.email, data.password, function(userId){
 				
 					log('created user ' + userId + ' ' + data.email);
 
-					var session = getUser().makeSession(userId, function(token){
+					var session = internal.makeSession(userId, function(token){
 						_.assertString(token)
 						//setSessionCookie(res, session);
 						//setLongSessionCookie(res, session)
@@ -136,19 +137,20 @@ exports.load = function(app, secureHost){
 		var data = req.body;
 
 		log('/ajax/login request received .email: ' + data.email);
+		//console.log('login')
 
-		getUser().findUser(data.email, function(userId){
-			log('found user: ' + userId);
+		internal.findUser(data.email, function(userId){
+			//console.log('found user: ' + userId);
 			if(userId === undefined){
 				res.send({
 					error: 'authentication failed'
 				}, 403);
 			}else{
 				util.debug('found user: ' + userId);
-				getUser().authenticate(userId, data.password, function(ok){
+				internal.authenticate(userId, data.password, function(ok){
 
 					if(ok){
-						getUser().makeSession(userId, function(token){
+						internal.makeSession(userId, function(token){
 							res.send({token: token, userId: userId});
 						});
 
@@ -172,7 +174,7 @@ exports.load = function(app, secureHost){
 			sid = sid.substr(0, sid.indexOf('|'));
 			res.clearCookie('SID');
 			res.cookie('LOGGEDOUT','true')
-			getUser().clearSession(sid, function(did){
+			internal.clearSession(sid, function(did){
 				if(did){
 					res.send({result: 'ok'});
 				}else{
@@ -188,7 +190,7 @@ exports.load = function(app, secureHost){
 		//console.log(require('util').inspect(req))
 		var token = req.body.token
 
-		getUser().checkSession(token, function(ok, userId){
+		internal.checkSession(token, function(ok, userId){
 			if(ok){
 				res.send({}, 200)
 			}else{
@@ -201,17 +203,17 @@ exports.load = function(app, secureHost){
 
 	app.post('/ajax/resetpassword', function(req, res){
 		var data = req.body;
-		getUser().getAuthenticationKeyEmail(data.key, function(email){
+		internal.getAuthenticationKeyEmail(data.key, function(email){
 			if(email){
 				log('finding user for email: ' + email);
-				getUser().findUser(email, function(userId){
+				internal.findUser(email, function(userId){
 					if(userId){
 
 						log('changing password (from reset request) for ' + email);
 					
-						getUser().setPassword(userId, data.password);
+						internal.setPassword(userId, data.password);
 					
-						getUser().expireAuthenticationKey(data.key);
+						internal.expireAuthenticationKey(data.key);
 						res.send({result: 'ok'});
 					}else{
 						res.send({
@@ -229,13 +231,13 @@ exports.load = function(app, secureHost){
 
 	app.post('/ajax/sendresetpasswordemail', function(req, res){
 		var data = req.body;
-		getUser().findUser(data.email, function(userId){
+		internal.findUser(data.email, function(userId){
 			if(userId === undefined){
 				res.send({
 					error: 'email address not recognized'
 				}, 403)
 			}else{
-				getUser().createAuthenticationKey(data.email, function(lostPasswordKey){
+				internal.createAuthenticationKey(data.email, function(lostPasswordKey){
 
 					if(!app.emailConfig) throw new Error('cannot reset password with no app.emailConfig set');
 
@@ -348,7 +350,7 @@ exports.load = function(app, secureHost){
 		authenticate: authenticate,
 		authenticateByToken: authenticateByToken,
 		onUserMade: function(listener){
-			getUser().onUserMade(listener)
+			internal.onUserMade(listener)
 		}
 	}
 }

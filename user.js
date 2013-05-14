@@ -26,21 +26,35 @@ var log = require('quicklog').make('user-minnow/api')
 exports.make = function(app, secureApp, minnowClient, host, secureHost, cb){
 	_.assertLength(arguments, 6)
 	
-	internalmaker.make(minnowClient, cb)
+	internalmaker.make(minnowClient, function(internal){
+		_.assertDefined(internal)
+
+		
+		var insecureAuthenticate = exports.insecure.load(app, secureHost, internal)
+		var secureAuthenticate = exports.secure.load(app, secureApp, host, secureHost, internal)
 	
-	var insecureAuthenticate = exports.insecure.load(app, secureHost)
-	var secureAuthenticate = exports.secure.load(app, secureApp, host, secureHost)
-	
-	return {
-		insecureAuthenticate: insecureAuthenticate.authenticate,
-		secureAuthenticate: secureAuthenticate.authenticate,
-		authenticateByToken: insecureAuthenticate.authenticateByToken,
-		onUserMade: insecureAuthenticate.onUserMade,
-		getEmail: function(userId, cb){
-			exports.getEmail(userId, cb)
+		var handle = {
+			//handle: insecureAuthenticate,
+			insecureAuthenticate: insecureAuthenticate.authenticate,
+			secureAuthenticate: secureAuthenticate.authenticate,
+			authenticateByToken: insecureAuthenticate.authenticateByToken,
+			onUserMade: insecureAuthenticate.onUserMade,
+			getEmail: function(userId, cb){
+				exports.getEmail(userId, cb)
+			}
 		}
-	}
+	
+		handle.findUser = internal.findUser
+		handle.makeUser = internal.makeUser
+		handle.authenticate = internal.authenticate
+		handle.makeSession = internal.makeSession
+	
+		cb(handle)
+	})
+	
+	//return handle
 }
+/*
 
 exports.on = function(eventName, cb){
 	var u = getUser()
@@ -76,5 +90,7 @@ exports.hasSession = function(req, cb){
 exports.makeUser = function(email, password, cb){
 	getUser().makeUser(email, password, cb)
 }
+
+*/
 
 
