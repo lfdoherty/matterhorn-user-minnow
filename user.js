@@ -44,6 +44,19 @@ exports.make = function(app, secureApp, minnowClient, host, secureHost, cb){
 			}
 		}
 	
+		handle.hasSession = hasSession = function(req, cb){
+			var sid = req.cookies.SID;
+			if(sid === undefined){
+				log('no SID cookie found')
+				cb(false);
+			}else{
+				sid = sid.substr(0, sid.indexOf('|'))
+				internal.checkSession(sid, function(ok, userId){
+					cb(ok);
+				});
+			}
+		}
+		
 		handle.findUser = internal.findUser
 		handle.makeUser = internal.makeUser
 		handle.authenticate = internal.authenticate
