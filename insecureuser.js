@@ -61,7 +61,9 @@ exports.load = function(app, secureHost, internal){
 			log('redirecting to ' + '/login?next='+req.url);
 			//console.log(secureHost + ' redirecting to ' + '/login?next='+req.url);
 			if(secureHost){
-				res.redirect(secureHost+'/login?next=' + req.url);
+				//res.redirect(secureHost+'/login?next=' + req.url);
+				console.log('host: ' + req.headers.host)
+				res.redirect('https://' + req.headers.host + req.url);
 			}else{
 				res.redirect('/login?next=' + req.url);
 			}

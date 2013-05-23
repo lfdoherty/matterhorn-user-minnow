@@ -49,6 +49,6 @@ document.addEventListener('DOMContentLoaded', function(){
 		}
 		//console.log('signing up')
 
-		pollsave(json, '/ajax/signup', 200, ok, fail);
+		pollsave(json, PostUrl, 200, ok, fail);
 	});
 });

@@ -15,8 +15,9 @@ function setSessionCookie(res, session){
 	res.cookie('SID', session, {httpOnly: true, secure: true});
 }
 
-exports.load = function(app, secureApp, host, secureHost, internal){
-	_.assertLength(arguments, 5)
+exports.load = function(app, secureApp, host, secureHost, internal, prefix){
+	_.assertLength(arguments, 6)
+	prefix = prefix||''
 	
 	//_.assertObject(app)
 	//_.assertObject(secureApp)
@@ -88,7 +89,10 @@ exports.load = function(app, secureApp, host, secureHost, internal){
 
 		function doLoginRedirect(){
 			//console.log('*redirecting to ' + secureHost+'/login?next='+host+req.url);
-			res.redirect(secureHost+'/login?next=' + host + req.url);
+			//res.redirect(secureHost+'/login?next=' + host + req.url);
+			var newUrl = 'https://' + req.headers.host + prefix+'/login?next=http://' + req.headers.host + req.url
+			console.log('*redirecting to: ' + newUrl)
+			res.redirect(newUrl);
 		}
 
 
@@ -277,7 +281,8 @@ exports.load = function(app, secureApp, host, secureHost, internal){
 		js: './simple_login',
 		cb: function(req, res, cb){
 			console.log('cbing');
-			cb({after: req.query.next, port: app.port, securePort: app.securePort,
+			cb({after: req.query.next, port: app.port, securePort: app.securePort, PostUrl: prefix+'/ajax/login',
+				SignupUrl: prefix+'/signup',
 				title: app.loginTitle || 'Log In'
 			});
 		}
@@ -287,7 +292,8 @@ exports.load = function(app, secureApp, host, secureHost, internal){
 		//css: [],
 		js: './simple_signup',
 		cb: function(req, res, cb){
-			cb({port: res.app.getPort(), securePort: res.app.getSecurePort(),
+			cb({port: res.app.getPort(), securePort: res.app.getSecurePort(), 
+				PostUrl: prefix+'/ajax/signup',
 				title: app.signupTitle || 'Sign Up'
 			})
 		}

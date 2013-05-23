@@ -14,7 +14,7 @@ var script = '<div>'+
 		'&nbsp;&nbsp;&nbsp;&nbsp;<a href="/lostpassword' + window.location.search + '">I Forgot My Password</a>' +
 	'<br/><br/>'+
 	'<input id="submit" type="submit" value="Submit"></input>'+
-	'<span style="padding-left:3em"><a id="signuplink" href="/signup">Create New Account</a></span>'+
+	'<span style="padding-left:3em"><a id="signuplink" href="'+SignupUrl+'">Create New Account</a></span>'+
 	'</form>'+
 	'<br/><br/>'+
 	'<div id="result"/>'+
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function(){
 			alert('login failure');
 		}
 
-		pollsave(json, '/ajax/login', 200, ok, fail);
+		pollsave(json, PostUrl, 200, ok, fail);
 	});
 	
 	var next = u.getParameterByName('next');
