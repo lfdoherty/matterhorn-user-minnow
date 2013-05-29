@@ -85,12 +85,20 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 			doLoginRedirect();
 			return;
 		}
+		
+		//console.log('cookies: ' + JSON.stringify(req.cookies))
+		if(req.cookies.LOGGEDOUT){
+			doLoginRedirect()
+			return
+		}
 		var sid = req.cookies.SID.substr(0, pi);
 
 		function doLoginRedirect(){
-			//console.log('*redirecting to ' + secureHost+'/login?next='+host+req.url);
+			var protocol = req.headers["x-forwarded-proto"] || req.protocol
+			console.log('*redirecting to ' + secureHost+'/login?next='+req.headers.host+req.url + ' ' + protocol);
+			console.log(JSON.stringify(req.headers))
 			//res.redirect(secureHost+'/login?next=' + host + req.url);
-			var newUrl = 'https://' + req.headers.host + prefix+'/login?next=http://' + req.headers.host + req.url
+			var newUrl = 'https://' + req.headers.host + prefix+'/login?next='+protocol+'://' + req.headers.host + req.url
 			console.log('*redirecting to: ' + newUrl)
 			res.redirect(newUrl);
 		}

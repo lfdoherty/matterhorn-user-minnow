@@ -15,13 +15,14 @@ function makeCookie(token, userId){
 	
 	var loc = document.location;
 
-	var domainStr = (loc.hostname === 'localhost' ? '' : '; domain=' + loc.hostname);
+	var domainStr = (loc.hostname === 'localhost' ? ';path=/' : '; domain=' + loc.hostname+';path=/');
 	var newCookie = token + '|'+userId + domainStr;
 
-	newCookie += '; Expires='+new Date(Date.now()+OneMonth).toUTCString();
 	newCookie = 'SID='+newCookie;
+	newCookie += '; Expires='+new Date(Date.now()+OneMonth).toUTCString();
+	//newCookie += domainStr
 	console.log('set cookie: ' + newCookie)
-	document.cookie = 'LOGGEDOUT=; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+	document.cookie = 'LOGGEDOUT=true; expires=Thu, 01 Jan 1970 00:00:01 GMT;'+domainStr
 	document.cookie = newCookie
 }
 exports.makeCookie = makeCookie
