@@ -22,7 +22,11 @@ function makeCookie(token, userId){
 	newCookie += '; Expires='+new Date(Date.now()+OneMonth).toUTCString();
 	//newCookie += domainStr
 	console.log('set cookie: ' + newCookie)
-	document.cookie = 'LOGGEDOUT=true; Expires='+new Date(0).toUTCString()+';'+domainStr
+	var loggedOutCookie = 'LOGGEDOUT=true; Expires='+new Date(0).toUTCString()+';'+domainStr
+	console.log('clearing loggedout, setting to: ' + document.cookie)
+	document.cookie = loggedOutCookie
+	console.log('cookie: ' + document.cookie)
 	document.cookie = newCookie
+	console.log('cookie: ' + document.cookie)
 }
 exports.makeCookie = makeCookie
