@@ -1,4 +1,8 @@
 
+var urlModule = require('url')
+var querystring = require('querystring')
+
+
 var _ = require('underscorem')
 
 exports.module = module
@@ -260,15 +264,14 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 
 		res.send({result: 'ok'});	
 	});*/
-	app.post('/ajax/logout', logout);
-	secureApp.post('/ajax/logout', logout);
-	function logout(req, res){
 
-		var sid = req.cookies.SID;
+	secureApp.get('/logout', function(req, res){
+		/*var sid = req.cookies.SID;
 
 		if(sid !== undefined){
 			sid = sid.substr(0, sid.indexOf('|'));
 			res.clearCookie('SID');
+			res.cookie('OLDSID', req.cookies.SID)
 			res.cookie('LOGGEDOUT','true')
 			internal.clearSession(sid, function(did){
 				if(did){
@@ -277,7 +280,77 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 					res.send({result: 'unknown session token'});
 				}
 			});
+		}*/
+		console.log('/logout GET')
+		
+		doLogout(req, res, function(err){
+			if(err){
+				console.log('err: ' + err)
+				res.send('<html><body>Error during logout: ' + err + '</body></html>')//{result: err});
+			}else{
+				//res.send('<html><body>You have been logged out.</body></html>');
+				var parsedUrl = urlModule.parse(req.url, true)
+				//querystring.parse(parsedUrl.)
+				var next = parsedUrl.query.next
+				if(next){
+					console.log('redirecting to: ' + next)
+					res.redirect(next)
+				}else{
+					console.log('straightforward msg: ' + req.url + ' ' + JSON.stringify(parsedUrl))
+					res.send('<html><body>You have been logged out.</body></html>');
+				}
+			}
+		})
+	})
+	
+	function doLogout(req, res, cb){
+		var sid = req.cookies.SID;
+
+		if(sid !== undefined){
+			sid = sid.substr(0, sid.indexOf('|'));
+			res.clearCookie('SID');
+			res.cookie('OLDSID', req.cookies.SID)
+			res.cookie('LOGGEDOUT','true')
+			internal.clearSession(sid, function(did){
+				if(did){
+					//res.send({result: 'ok'});
+					cb()
+				}else{
+					//res.send({result: 'unknown session token'});
+					cb('unknown session token')
+				}
+			});
+		}else{
+			cb('no cookie')
 		}
+	}
+
+	app.post('/ajax/logout', logout);
+	secureApp.post('/ajax/logout', logout);
+	function logout(req, res){
+
+		doLogout(req, res, function(err){
+			if(err){
+				res.send({result: err});
+			}else{
+				res.send({result: 'ok'});
+			}
+		})
+		/*var sid = req.cookies.SID;
+
+		if(sid !== undefined){
+			sid = sid.substr(0, sid.indexOf('|'));
+			res.clearCookie('SID');
+			res.cookie('OLDSID', req.cookies.SID)
+			res.cookie('LOGGEDOUT','true')
+			internal.clearSession(sid, function(did){
+				if(did){
+					res.send({result: 'ok'});
+				}else{
+					res.send({result: 'unknown session token'});
+				}
+			});
+		}*/
 
 	}
 
