@@ -18,11 +18,13 @@ function makeCookie(token, userId){
 	var domainStr = (loc.hostname === 'localhost' ? ';path=/' : '; domain=' + loc.hostname+';path=/');
 	var newCookie = token + '|'+userId + domainStr;
 
+	var loggedoutDomainStr = (loc.hostname === 'localhost' ? ';path=/' : '; host=' + loc.hostname+';path=/');
+	
 	newCookie = 'SID='+newCookie;
 	newCookie += '; Expires='+new Date(Date.now()+OneMonth).toUTCString();
 	//newCookie += domainStr
 	console.log('set cookie: ' + newCookie)
-	var loggedOutCookie = 'LOGGEDOUT=true; Expires='+new Date(0).toUTCString()+';'+domainStr
+	var loggedOutCookie = 'LOGGEDOUT=true; Expires='+new Date(0).toUTCString()+loggedoutDomainStr
 	console.log('clearing loggedout, setting to: ' + loggedOutCookie)
 	document.cookie = loggedOutCookie
 	console.log('cookie: ' + document.cookie)
