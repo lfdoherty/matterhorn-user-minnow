@@ -47,10 +47,12 @@ function finishMake(c, m, cb){
 			}, function(userId){
 				//console.log('make got userId: ' + userId + ' ' + userMadeListeners.length)
 				_.assert(userId > 0)
-				userMadeListeners.forEach(function(listener){
-					listener(userId, email, viaWeb)
+				var cdl = _.latch(userMadeListeners.length, function(){
+					cb(userId)
 				})
-				cb(userId)
+				userMadeListeners.forEach(function(listener){
+					listener(userId, email, viaWeb, cdl)
+				})
 			})
 		},
 		
