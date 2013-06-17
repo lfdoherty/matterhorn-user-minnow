@@ -386,6 +386,12 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 	secureApp.page(exports, loginPage);
 	secureApp.page(exports, signupPage);
 	
+	var forceCookiePage = {
+		url: '/forcecookie',
+		js: './forcecookie'
+	};	
+	secureApp.page(exports, forceCookiePage)
+	
 	return {
 		authenticate: authenticate,
 		authenticateByToken: authenticateByToken,
