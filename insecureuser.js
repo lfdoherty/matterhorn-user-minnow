@@ -191,6 +191,11 @@ exports.load = function(app, secureHost, internal){
 
 		//console.log(require('util').inspect(req))
 		var token = req.body.token
+		
+		if(!token){
+			res.send(403)
+			return
+		}
 
 		internal.checkSession(token, function(ok, userId){
 			if(ok){

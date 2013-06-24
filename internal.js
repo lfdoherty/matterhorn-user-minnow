@@ -166,6 +166,11 @@ function finishMake(c, m, cb){
 			})
 		},
 		checkSession: function(token, cb){
+			if(!_.isString(token)){
+				console.log('warning in checkSession: token not a string')
+				cb(false)
+				return
+			}
 			_.assertString(token);
 			//console.log('checking for session with token: ' + token)
 			c.snap('singleSessionByToken', [token], function(err, suv){

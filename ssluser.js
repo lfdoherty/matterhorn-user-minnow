@@ -265,22 +265,8 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 		res.send({result: 'ok'});	
 	});*/
 
-	secureApp.get('/logout', function(req, res){
-		/*var sid = req.cookies.SID;
-
-		if(sid !== undefined){
-			sid = sid.substr(0, sid.indexOf('|'));
-			res.clearCookie('SID');
-			res.cookie('OLDSID', req.cookies.SID)
-			res.cookie('LOGGEDOUT','true')
-			internal.clearSession(sid, function(did){
-				if(did){
-					res.send({result: 'ok'});
-				}else{
-					res.send({result: 'unknown session token'});
-				}
-			});
-		}*/
+	function logoutHandler(req, res){
+		
 		console.log('/logout GET')
 		
 		doLogout(req, res, function(err){
@@ -301,7 +287,9 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 				}
 			}
 		})
-	})
+	}
+	app.get('/logout', logoutHandler)
+	secureApp.get('/logout', logoutHandler)
 	
 	function doLogout(req, res, cb){
 		var sid = req.cookies.SID;
