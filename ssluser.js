@@ -22,40 +22,7 @@ function setSessionCookie(res, session){
 exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 	_.assertLength(arguments, 6)
 	prefix = prefix||''
-	
-	//_.assertObject(app)
-	//_.assertObject(secureApp)
-	
-	/*function authenticate(req, res, next){
-		console.log('authenticating securely');
-		var sid = req.cookies.sid;
 
-		function doLoginRedirect(){
-			//sys.debug(sys.inspect(req));
-			//var url = secureApp.settings.securehost + '/login?next=' + req.url;
-			console.log('redirecting to ' + '/login?next='+req.url);
-			//res.redirect(url);
-			//res.send('need to use js redirect');
-			res.app.javascriptRedirectToSecure(res, '/login?next=' + req.url);
-		}
-
-		if(sid === undefined){
-			doLoginRedirect();
-			return;
-		}
-
-		getUser().checkSession(sid, function(ok, userId){
-			if(ok){
-				getUser().getEmail(userId, function(email){
-					req.user = {id: userId, email: email};
-					next();
-				});
-			}else{
-				sys.debug('redirecting to login');
-				doLoginRedirect();
-			}
-		});
-	}*/
 	function authenticateByToken(token, cb){
 		_.assertString(token)
 		_.assertFunction(cb)
@@ -64,14 +31,8 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 		internal.checkSession(token, function(ok, userId){
 			if(ok){
 				_.assertInt(userId)
-				//getUser().getEmail(userId, function(email){
-				//	req.user = {id: userId, email: email};
-				//	req.userToken = userId
-					cb(undefined, userId)
-				//});
+				cb(undefined, userId)
 			}else{
-				//util.debug('redirecting to login');
-				//doLoginRedirect();
 				cb('authentication failed')
 			}
 		});
@@ -104,6 +65,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 			//res.redirect(secureHost+'/login?next=' + host + req.url);
 			var newUrl = 'https://' + req.headers.host + prefix+'/login?next='+protocol+'://' + req.headers.host + req.url
 			console.log('*redirecting to: ' + newUrl)
+			res.header('Cache-Control', 'no-cache, no-store')
 			res.redirect(newUrl);
 		}
 
@@ -114,6 +76,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 				internal.getEmail(userId, function(email){
 					req.user = {id: userId, email: email};
 					req.userToken = userId
+					console.log('session ok: ' + userId)
 					next();
 				});
 			}else{
@@ -127,23 +90,6 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 	//set up services for signup, login, logout, and lost password reset.
 	//all to be accessed via AJAX (these are not HTML resources.)
 
-	/*function signup(req, res){
-
-		var data = req.body;
-
-		getUser().makeUser(data.email, data.password, function(userId){
-			//getUser().setEmail(userId, data.email);
-			//getUser().setPassword(userId, data.password);
-
-			var session = getUser().makeSession(userId);
-
-			setSessionCookie(res, session);
-
-			res.send(session);
-		}, true);
-	}
-
-	app.post('/ajax/signup', signup);*/
 	function signup(req, res){
 
 		var data = req.body;
@@ -178,8 +124,8 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 
 					var session = internal.makeSession(userId, function(token){
 						_.assertString(token)
-						//setSessionCookie(res, session);
-						//setLongSessionCookie(res, session)
+
+						res.header('Cache-Control', 'no-cache, no-store')
 
 						res.send({token: token, userId: userId});
 					});
@@ -189,37 +135,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 	}
 
 	app.post('/ajax/signup', signup);
-	/*function login(req, res){
 
-		var data = req.body;
-
-		console.log('/ajax/login request received : ' + data.email);
-
-		getUser().findUser(data.email, function(userId){
-			console.log('found user: ' + userId);
-			if(userId === undefined){
-				res.send({
-					error: 'authentication failed'
-				}, 403);
-			}else{
-				sys.debug('found user: ' + userId);
-				getUser().authenticate(userId, data.password, function(ok){
-
-					if(ok){
-						var session = getUser().makeSession(userId);
-		
-						setSessionCookie(res, session);
-						res.send(session);
-				
-					}else{
-						res.send({
-							error: 'authentication failed'
-						}, 403);
-					}
-				});
-			}
-		});
-	}*/
 	function login(req, res){
 
 		var data = req.body;
@@ -238,6 +154,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 
 					if(ok){
 						internal.makeSession(userId, function(token){
+							res.header('Cache-Control', 'no-cache, no-store')
 							res.send({token: token, userId: userId});
 						});
 
@@ -253,21 +170,11 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 
 	app.post('/ajax/login', login);
 
-	/*app.post('/ajax/logout', function(req, res){
-
-		var sid = req.cookies.sid;
-
-		if(sid !== undefined){
-			getUser().clearSession(sid);
-			res.clearCookie('SID');
-		}
-
-		res.send({result: 'ok'});	
-	});*/
-
 	function logoutHandler(req, res){
 		
 		console.log('/logout GET')
+		
+		res.header('Cache-Control', 'no-cache, no-store')
 		
 		doLogout(req, res, function(err){
 			if(err){
@@ -278,6 +185,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 				var parsedUrl = urlModule.parse(req.url, true)
 				//querystring.parse(parsedUrl.)
 				var next = parsedUrl.query.next
+				
 				if(next){
 					console.log('redirecting to: ' + next)
 					res.redirect(next)
@@ -316,6 +224,8 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 	app.post('/ajax/logout', logout);
 	secureApp.post('/ajax/logout', logout);
 	function logout(req, res){
+	
+		res.header('Cache-Control', 'no-cache, no-store')
 
 		doLogout(req, res, function(err){
 			if(err){
@@ -324,22 +234,6 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 				res.send({result: 'ok'});
 			}
 		})
-		/*var sid = req.cookies.SID;
-
-		if(sid !== undefined){
-			sid = sid.substr(0, sid.indexOf('|'));
-			res.clearCookie('SID');
-			res.cookie('OLDSID', req.cookies.SID)
-			res.cookie('LOGGEDOUT','true')
-			internal.clearSession(sid, function(did){
-				if(did){
-					res.send({result: 'ok'});
-				}else{
-					res.send({result: 'unknown session token'});
-				}
-			});
-		}*/
-
 	}
 
 	//secureApp.js(exports, 'auth-utils', ['utils']);

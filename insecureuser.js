@@ -60,6 +60,7 @@ exports.load = function(app, secureHost, internal){
 		function doLoginRedirect(){
 			log('redirecting to ' + '/login?next='+req.url);
 			//console.log(secureHost + ' redirecting to ' + '/login?next='+req.url);
+			res.header('Cache-Control', 'no-cache, no-store')
 			if(secureHost){
 				//res.redirect(secureHost+'/login?next=' + req.url);
 				console.log('host: ' + req.headers.host)
@@ -76,6 +77,7 @@ exports.load = function(app, secureHost, internal){
 				internal.getEmail(userId, function(email){
 					req.user = {id: userId, email: email};
 					req.userToken = userId
+					//console.log('session ok: ' + userId)
 					next();
 				});
 			}else{
@@ -124,6 +126,7 @@ exports.load = function(app, secureHost, internal){
 						_.assertString(token)
 						//setSessionCookie(res, session);
 						//setLongSessionCookie(res, session)
+						res.header('Cache-Control', 'no-cache, no-store')
 
 						res.send({token: token, userId: userId});
 					});
@@ -153,6 +156,7 @@ exports.load = function(app, secureHost, internal){
 
 					if(ok){
 						internal.makeSession(userId, function(token){
+							res.header('Cache-Control', 'no-cache, no-store')
 							res.send({token: token, userId: userId});
 						});
 
@@ -176,6 +180,7 @@ exports.load = function(app, secureHost, internal){
 			sid = sid.substr(0, sid.indexOf('|'));
 			res.clearCookie('SID');
 			res.cookie('LOGGEDOUT','true')
+			res.header('Cache-Control', 'no-cache, no-store')
 			internal.clearSession(sid, function(did){
 				if(did){
 					res.send({result: 'ok'});
@@ -199,6 +204,7 @@ exports.load = function(app, secureHost, internal){
 
 		internal.checkSession(token, function(ok, userId){
 			if(ok){
+				res.header('Cache-Control', 'no-cache, no-store')
 				res.send({}, 200)
 			}else{
 				res.send(403)
@@ -221,6 +227,7 @@ exports.load = function(app, secureHost, internal){
 						internal.setPassword(userId, data.password);
 					
 						internal.expireAuthenticationKey(data.key);
+						res.header('Cache-Control', 'no-cache, no-store')
 						res.send({result: 'ok'});
 					}else{
 						res.send({
@@ -277,6 +284,7 @@ exports.load = function(app, secureHost, internal){
 						  console.log(err);
 						  res.send(500);
 						}else{
+							res.header('Cache-Control', 'no-cache, no-store')
 							res.send(200);
 						}
 					});
