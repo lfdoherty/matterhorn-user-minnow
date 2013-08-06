@@ -191,6 +191,11 @@ exports.load = function(app, secureHost, internal){
 		}
 
 	});
+
+	app.get('/ajax/checksessioncookie', authenticate, function(req, res){
+		res.header('Cache-Control', 'no-cache, no-store')
+		res.send({userId: req.userToken})
+	})
 	
 	app.post('/ajax/checksession', function(req, res){
 
