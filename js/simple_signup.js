@@ -3,9 +3,11 @@
 var pollsave = require('matterhorn-standard/js/pollsave')//.pollsave
 var u = require('./utils')
 
+var page = require('fpage')
+
 var script = '<div>'+
 	'<noscript><h1><font color="red">You must enable Javascript to use this website.<br/><br/><br/></font></h1></noscript>'+
-	'<h2>' + title + '</h2>'+
+	'<h2>' + page.params.title + '</h2>'+
 	'<form action="javascript:;">'+
 	'Email: <input id="email" name="email" type="text"></input><br/><br/>'+
 	'Password: <input id="password" name="password" type="password" size="25"></input><br/><br/>'+
@@ -17,8 +19,10 @@ var script = '<div>'+
 
 
 //jQuery(document).ready(function(){
-document.addEventListener('DOMContentLoaded', function(){
-	document.body.innerHTML = script
+//document.addEventListener('DOMContentLoaded', function(){
+page.ready(function(){
+	//document.body.innerHTML = script
+	page.setBodyHtml(script)
 
 	//jQuery("#submit").click(function(){
 	document.getElementById('submit').addEventListener('click', function(){
@@ -49,6 +53,6 @@ document.addEventListener('DOMContentLoaded', function(){
 		}
 		//console.log('signing up')
 
-		pollsave(json, PostUrl, 200, ok, fail);
+		pollsave(json, page.params.PostUrl, 200, ok, fail);
 	});
 });
