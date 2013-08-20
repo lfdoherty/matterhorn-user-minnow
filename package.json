@@ -1,6 +1,6 @@
 {
 	"name": "matterhorn-user-minnow",
-	"version": "0.2.37",
+	"version": "0.2.38",
 	"description": "User management for the matterhorn framework, with minnow as the database.",
 	"author": "Liam Doherty",
 	"main": "user",

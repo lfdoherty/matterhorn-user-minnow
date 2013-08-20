@@ -60,11 +60,11 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 
 		function doLoginRedirect(){
 			var protocol = req.headers["x-forwarded-proto"] || req.protocol
-			console.log('*redirecting to ' + secureHost+'/login?next='+req.headers.host+req.url + ' ' + protocol);
-			console.log(JSON.stringify(req.headers))
+			//console.log('*redirecting to ' + secureHost+'/login?next='+req.headers.host+req.url + ' ' + protocol);
+			//console.log(JSON.stringify(req.headers))
 			//res.redirect(secureHost+'/login?next=' + host + req.url);
 			var newUrl = 'https://' + req.headers.host + prefix+'/login?next='+protocol+'://' + req.headers.host + req.url
-			console.log('*redirecting to: ' + newUrl)
+			//console.log('*redirecting to: ' + newUrl)
 			res.header('Cache-Control', 'no-cache, no-store')
 			res.redirect(newUrl);
 		}
@@ -76,7 +76,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 				internal.getEmail(userId, function(email){
 					req.user = {id: userId, email: email};
 					req.userToken = userId
-					console.log('session ok: ' + userId)
+					//console.log('session ok: ' + userId)
 					next();
 				});
 			}else{
