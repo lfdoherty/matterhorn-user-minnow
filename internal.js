@@ -92,7 +92,7 @@ function finishMake(c, m, cb){
 		setEmail: function(id, email){
 			_.assertString(email)
 
-			c.view('singleUser', [id], function(err, suv){
+			c.snap('singleUser', [id], function(err, suv){
 				if(err) throw err
 				suv.user.email.set(email)
 			})
@@ -109,7 +109,7 @@ function finishMake(c, m, cb){
 
 			var salt = bcrypt.genSaltSync(10);  
 
-			c.view('singleUser', [id], function(err, suv){
+			c.snap('singleUser', [id], function(err, suv){
 				if(err) throw err
 				suv.user.hash.set(hashPassword(password, salt))
 				suv.user.passwordChangedTime.set(Date.now())
@@ -195,7 +195,7 @@ function finishMake(c, m, cb){
 		clearSession: function(token, cb){
 
 			//console.log('clearing user session: ' + token);
-			c.view('singleSessionByToken', [token], function(err, sv){
+			c.snap('singleSessionByToken', [token], function(err, sv){
 				if(err) throw err
 				if(sv.has('session')){
 					try{
