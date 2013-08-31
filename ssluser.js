@@ -207,7 +207,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 			res.clearCookie('SID');
 			res.cookie('OLDSID', req.cookies.SID)
 			res.cookie('LOGGEDOUT','true')
-			internal.clearSession(sid, function(did){
+			internal.clearAllSessions(sid, function(did){
 				if(did){
 					//res.send({result: 'ok'});
 					cb()

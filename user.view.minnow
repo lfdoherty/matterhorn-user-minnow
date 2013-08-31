@@ -13,5 +13,14 @@ singleUser(user user) 202
 singleSessionByToken(token string) 204
 	session one(subset(*session,{eq(~.token,token)})) 1
 
+getSession(token string){
+	one(subset(*session,{eq(~.token,token)}))
+
+}
+allSessionsBySameUser(token string) 205
+	session getSession(token) 3
+	sessions subset(*session,{eq(~.user,getSession(token).user)}) 1
+	userId getSession(token).user.id 2
+
 getHash(user user) 203
 	hash user.hash 1

@@ -13,19 +13,20 @@ function hashPassword(password, salt){
 
 var log = require('quicklog').make('user-minnow/internal')
 
-function make(minnowClient, cb){
+function make(minnowClient, listeners, cb){
 
-	_.assertLength(arguments, 2);
+	_.assertLength(arguments, 3);
 	_.assertFunction(cb);
 
 	minnowClient.view('userGeneral', [], _.assureOnce(function(err, h){
 		if(err) throw err;
-		finishMake(minnowClient, h, cb)
+		finishMake(minnowClient, listeners, h, cb)
 	}))		
 }
 
-function finishMake(c, m, cb){
+function finishMake(c, listeners, m, cb){
 
+	//_.errout(typeof(listeners.logout))
 	_.assertDefined(m)
 	
 	var userMadeListeners = []
@@ -161,6 +162,8 @@ function finishMake(c, m, cb){
 					token: token
 				}, function(newId){
 					//console.log('made session: ' + newId + ' ' + JSON.stringify(obj.toJson()))
+					if(listeners.login) listeners.login(id, token)
+					
 					if(cb) cb(token, newId)
 				})
 			})
@@ -199,7 +202,37 @@ function finishMake(c, m, cb){
 				if(err) throw err
 				if(sv.has('session')){
 					try{
+						var userId = sv.session.user.id()
 						sv.session.del()
+						//if(listeners.logout) listeners.logout(userId, token)
+					}catch(e){
+						console.log(e)
+					}
+					log('session deleted: ' + token)
+					if(cb) cb(true)
+				}else{
+					log('session clear failed, unknown token: ' + token)
+					if(cb) cb(false)
+				}
+			})
+		},
+		clearAllSessions: function(token, cb){
+
+			//console.log('clearing user session---: ' + token);
+			c.snap('allSessionsBySameUser', [token], function(err, sv){
+				if(err) throw err
+				//console.log('logging out---')
+				if(sv.has('session')){
+					try{
+						var userId = sv.userId.value()
+						sv.sessions.each(function(session){
+							session.del()
+						})
+						//sv.session.del()
+						if(listeners.logout){
+							//console.log('logging out')
+							listeners.logout(userId)
+						}
 					}catch(e){
 						console.log(e)
 					}

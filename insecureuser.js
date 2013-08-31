@@ -181,7 +181,7 @@ exports.load = function(app, secureHost, internal){
 			res.clearCookie('SID');
 			res.cookie('LOGGEDOUT','true')
 			res.header('Cache-Control', 'no-cache, no-store')
-			internal.clearSession(sid, function(did){
+			internal.clearAllSessions(sid, function(did){
 				if(did){
 					res.send({result: 'ok'});
 				}else{
