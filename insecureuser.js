@@ -81,7 +81,7 @@ exports.load = function(app, secureHost, internal){
 					next();
 				});
 			}else{
-				util.debug('redirecting to login');
+				//util.debug('redirecting to login');
 				doLoginRedirect();
 			}
 		});

@@ -80,7 +80,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 					next();
 				});
 			}else{
-				util.debug('redirecting to login');
+				//util.debug('redirecting to login');
 				doLoginRedirect();
 			}
 		});
