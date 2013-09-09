@@ -58,12 +58,12 @@ exports.load = function(app, secureHost, internal){
 		var sid = req.cookies.SID.substr(0, pi);
 
 		function doLoginRedirect(){
-			log('redirecting to ' + '/login?next='+req.url);
+			//log('redirecting to ' + '/login?next='+req.url);
 			//console.log(secureHost + ' redirecting to ' + '/login?next='+req.url);
 			res.header('Cache-Control', 'no-cache, no-store')
 			if(secureHost){
 				//res.redirect(secureHost+'/login?next=' + req.url);
-				console.log('host: ' + req.headers.host)
+				//console.log('host: ' + req.headers.host)
 				res.redirect('https://' + req.headers.host + req.url);
 			}else{
 				res.redirect('/login?next=' + req.url);
