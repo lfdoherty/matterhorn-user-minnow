@@ -47,7 +47,7 @@ function finishMake(c, listeners, m, cb){
 				//password: password
 			}, function(userId){
 				//console.log('make got userId: ' + userId + ' ' + userMadeListeners.length)
-				_.assert(userId > 0)
+				//_.assert(userId > 0)
 				var cdl = _.latch(userMadeListeners.length, function(){
 					cb(userId)
 				})
@@ -100,7 +100,7 @@ function finishMake(c, listeners, m, cb){
 		},
 		getEmail: function(id, cb){
 			//i.getString(id, 'email', cb);
-			_.assert(id > 0)
+			//_.assert(id > 0)
 			c.snap('singleUser', [id], function(err, suv){
 				if(err) throw err
 				cb(suv.user.email.value())
@@ -120,7 +120,7 @@ function finishMake(c, listeners, m, cb){
 		},
 		authenticate: function(id, password, cb, failDelayCb){
 
-			_.assert(id > 0)
+			//_.assert(id > 0)
 			c.snap('getHash', [id], function(err, v){
 				if(err) throw err
 				var hash = v.hash.value()
@@ -142,7 +142,7 @@ function finishMake(c, listeners, m, cb){
 				if(err) throw err
 				//console.log('json: ' + JSON.stringify(suv.toJson()))
 				if(suv.hasProperty('user')){
-					_.assert(suv.user.id() > 0)
+					//_.assert(suv.user.id() > 0)
 					cb(suv.user.id())
 				}else{
 					cb()
@@ -156,7 +156,7 @@ function finishMake(c, listeners, m, cb){
 
 			c.snap('singleUser', [id], function(err, suv){
 				if(err) throw err
-				_.assert(suv.user.id() > 0)
+				//_.assert(suv.user.id() > 0)
 				var obj = m.make('session', {
 					user: suv.user,
 					token: token
@@ -181,7 +181,7 @@ function finishMake(c, listeners, m, cb){
 				try{
 					if(suv.has('session') && suv.session.has('user')){
 						//console.log('user id: ' + suv.session.user.id() + ' ' + JSON.stringify(suv.toJson()))
-						_.assert(suv.session.user.id() > 0)
+						//_.assert(suv.session.user.id() > 0)
 						log('found session with token: ' + token)
 						cb(true, suv.session.user.id())
 					}else{

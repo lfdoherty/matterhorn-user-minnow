@@ -30,7 +30,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 		
 		internal.checkSession(token, function(ok, userId){
 			if(ok){
-				_.assertInt(userId)
+				//_.assertInt(userId)
 				cb(undefined, userId)
 			}else{
 				cb('authentication failed')
@@ -72,7 +72,7 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 
 		internal.checkSession(sid, function(ok, userId){
 			if(ok){
-				_.assertInt(userId)
+				//_.assertInt(userId)
 				internal.getEmail(userId, function(email){
 					req.user = {id: userId, email: email};
 					req.userToken = userId
@@ -102,6 +102,8 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 		}
 
 		log('/ajax/signup request received .email: ' + data.email);
+
+		res.header('Cache-Control', 'no-cache, no-store')
 		
 		internal.findUser(data.email, function(userId){
 
@@ -141,6 +143,8 @@ exports.load = function(app, secureApp, host, secureHost, internal, prefix){
 		var data = req.body;
 
 		log('/ajax/login request received .email: ' + data.email);
+
+		res.header('Cache-Control', 'no-cache, no-store')
 
 		internal.findUser(data.email, function(userId){
 			log('found user: ' + userId);

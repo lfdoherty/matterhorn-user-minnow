@@ -29,7 +29,7 @@ exports.load = function(app, secureHost, internal){
 		
 		internal.checkSession(token, function(ok, userId){
 			if(ok){
-				_.assertInt(userId)
+				//_.assertInt(userId)
 				//getUser().getEmail(userId, function(email){
 				//	req.user = {id: userId, email: email};
 				//	req.userToken = userId
@@ -73,7 +73,7 @@ exports.load = function(app, secureHost, internal){
 
 		internal.checkSession(sid, function(ok, userId){
 			if(ok){
-				_.assertInt(userId)
+				_.assertString(userId)
 				internal.getEmail(userId, function(email){
 					req.user = {id: userId, email: email};
 					req.userToken = userId
