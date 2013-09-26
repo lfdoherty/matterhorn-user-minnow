@@ -18,7 +18,7 @@ function make(minnowClient, listeners, cb){
 	_.assertLength(arguments, 3);
 	_.assertFunction(cb);
 
-	minnowClient.view('userGeneral', [], _.assureOnce(function(err, h){
+	minnowClient.snap('userGeneral', [], _.assureOnce(function(err, h){
 		if(err) throw err;
 		finishMake(minnowClient, listeners, h, cb)
 	}))		
@@ -39,7 +39,7 @@ function finishMake(c, listeners, m, cb){
 			var hash = hashPassword(password, salt)
 			var now = Date.now()
 			
-			m.make('user', {
+			c.make('user', {
 				createdTime: now,
 				email: email,
 				passwordChangedTime: now,
@@ -157,7 +157,7 @@ function finishMake(c, listeners, m, cb){
 			c.snap('singleUser', [id], function(err, suv){
 				if(err) throw err
 				//_.assert(suv.user.id() > 0)
-				var obj = m.make('session', {
+				var obj = c.make('session', {
 					user: suv.user,
 					token: token
 				}, function(newId){
