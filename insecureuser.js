@@ -24,8 +24,12 @@ exports.load = function(app, secureHost, internal){
 	_.assertLength(arguments, 3)
 
 	function authenticateByToken(token, cb){
-		_.assertString(token)
 		_.assertFunction(cb)
+		if(!token){
+			cb('undefined token provided')
+			return
+		}
+		_.assertString(token)
 		
 		internal.checkSession(token, function(ok, userId){
 			if(ok){
